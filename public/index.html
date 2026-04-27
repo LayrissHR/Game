@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="bg">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IT Quest: Мисия Академия</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="background-grid" aria-hidden="true"></div>
+    <div class="background-orb orb-one" aria-hidden="true"></div>
+    <div class="background-orb orb-two" aria-hidden="true"></div>
+    <div class="background-orb orb-three" aria-hidden="true"></div>
+
+    <div class="app-shell" id="app-shell">
+      <header class="utility-bar">
+        <div class="brand-chip">Кибер академия</div>
+        <div class="utility-actions">
+          <button id="sound-toggle" class="button button-subtle" type="button">Звук: включен</button>
+          <button id="event-mode-btn" class="button button-subtle" type="button">Режим за събитие</button>
+        </div>
+      </header>
+
+      <main class="main-stage">
+        <section id="screen-home" class="screen active" aria-labelledby="home-title">
+          <div class="hero-layout">
+            <article class="glass-panel hero-copy">
+              <p class="eyebrow">Мисия за бъдещи IT герои</p>
+              <h1 id="home-title" class="home-title">IT Quest: Мисия Академия</h1>
+              <p class="home-subtitle">Влез в ролята на млад IT герой и премини през 5 мисии!</p>
+              <p class="home-description">
+                Отговори на кратки въпроси, събери точки и виж дали ще станеш „Бъдещ IT специалист“.
+              </p>
+
+              <div class="name-panel">
+                <label class="visually-hidden" for="player-name">Име или псевдоним</label>
+                <input
+                  id="player-name"
+                  class="name-input"
+                  type="text"
+                  maxlength="20"
+                  autocomplete="off"
+                  placeholder="Въведи име или псевдоним"
+                />
+                <p id="home-error" class="message" role="alert" aria-live="polite"></p>
+              </div>
+
+              <div class="home-actions">
+                <button id="start-btn" class="button button-primary" type="button">Старт на мисията</button>
+                <button id="home-leaderboard-btn" class="button button-secondary" type="button">Виж класацията</button>
+              </div>
+
+              <p class="promo-note">
+                Създадено за бъдещите програмисти, дизайнери, инженери и IT специалисти.
+              </p>
+            </article>
+
+            <aside class="glass-panel hero-visual" aria-hidden="true">
+              <div class="academy-bot">
+                <div class="academy-bot__antenna"></div>
+                <div class="academy-bot__head">
+                  <span class="academy-bot__eye"></span>
+                  <span class="academy-bot__eye"></span>
+                </div>
+                <div class="academy-bot__body"></div>
+                <div class="academy-bot__arm academy-bot__arm--left"></div>
+                <div class="academy-bot__arm academy-bot__arm--right"></div>
+                <div class="academy-bot__spark academy-bot__spark--one"></div>
+                <div class="academy-bot__spark academy-bot__spark--two"></div>
+                <div class="academy-bot__spark academy-bot__spark--three"></div>
+              </div>
+
+              <div class="feature-cards">
+                <article class="mini-card">
+                  <span class="mini-card__value">5</span>
+                  <span class="mini-card__label">мисии</span>
+                </article>
+                <article class="mini-card">
+                  <span class="mini-card__value">550</span>
+                  <span class="mini-card__label">макс. точки</span>
+                </article>
+                <article class="mini-card">
+                  <span class="mini-card__value">1–2</span>
+                  <span class="mini-card__label">минути игра</span>
+                </article>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="screen-game" class="screen" aria-labelledby="mission-title" hidden>
+          <div class="glass-panel game-shell">
+            <div class="status-row">
+              <article class="status-chip">
+                <span class="status-chip__label">Напредък</span>
+                <strong id="mission-counter" class="status-chip__value">Мисия 1 от 5</strong>
+              </article>
+              <article class="status-chip">
+                <span class="status-chip__label">Точки</span>
+                <strong id="score-counter" class="status-chip__value">Точки: 0</strong>
+              </article>
+              <article class="status-chip">
+                <span class="status-chip__label">Време</span>
+                <strong id="timer-counter" class="status-chip__value">Време: 00:00</strong>
+              </article>
+            </div>
+
+            <div class="progress-track" aria-hidden="true">
+              <div id="progress-fill" class="progress-fill"></div>
+            </div>
+
+            <article class="mission-panel">
+              <div class="mission-heading">
+                <p class="eyebrow">Текущо предизвикателство</p>
+                <h2 id="mission-title" class="mission-title">Мисия</h2>
+              </div>
+
+              <p id="mission-question" class="mission-question"></p>
+              <pre id="mission-code" class="mission-code" hidden></pre>
+
+              <div id="order-builder" class="order-builder" hidden>
+                <div>
+                  <p class="order-heading">Избери реда с три клика:</p>
+                  <div id="order-slots" class="order-slots"></div>
+                </div>
+
+                <div id="order-options" class="order-options"></div>
+
+                <div class="order-actions">
+                  <button id="order-reset-btn" class="button button-secondary" type="button">Изчисти избора</button>
+                  <button id="order-confirm-btn" class="button button-primary" type="button">Потвърди</button>
+                </div>
+
+                <p id="order-status" class="message helper" aria-live="polite"></p>
+              </div>
+
+              <div id="answer-options" class="answer-options"></div>
+
+              <div id="feedback-panel" class="feedback-panel" hidden aria-live="polite">
+                <p id="feedback-badge" class="feedback-badge"></p>
+                <p id="feedback-text" class="feedback-text"></p>
+                <p id="feedback-note" class="feedback-note"></p>
+              </div>
+
+              <div class="mission-footer">
+                <button id="next-mission-btn" class="button button-primary" type="button" hidden>Следваща мисия</button>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section id="screen-result" class="screen" aria-labelledby="result-title" hidden>
+          <div class="result-layout">
+            <article class="glass-panel summary-card">
+              <div id="confetti-layer" class="confetti-layer" aria-hidden="true"></div>
+              <p class="eyebrow">Финален доклад</p>
+              <h2 id="result-title" class="mission-title">Мисията е завършена!</h2>
+              <div id="result-summary" class="summary-grid"></div>
+              <p class="result-message">
+                Искаш ли и ти да създаваш игри, сайтове, роботи и приложения? Това се учи при нас!
+              </p>
+              <p id="save-status" class="message" aria-live="polite"></p>
+            </article>
+
+            <article class="glass-panel promo-card">
+              <h3 class="promo-card__title">В нашето училище можеш да научиш:</h3>
+              <div class="promo-list">
+                <span class="promo-pill">Създаване на сайтове</span>
+                <span class="promo-pill">Програмиране на игри</span>
+                <span class="promo-pill">Работа с компютърни мрежи</span>
+                <span class="promo-pill">Киберсигурност</span>
+                <span class="promo-pill">Роботика и умни устройства</span>
+                <span class="promo-pill">Създаване на реални IT проекти</span>
+              </div>
+              <p class="final-slogan">Следващият IT герой може да си ти!</p>
+
+              <div class="result-actions">
+                <button id="result-new-game-btn" class="button button-primary" type="button">Нова игра</button>
+                <button id="result-leaderboard-btn" class="button button-secondary" type="button">Виж класацията</button>
+                <button id="result-home-btn" class="button button-subtle" type="button">Обратно към началото</button>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section id="screen-leaderboard" class="screen" aria-labelledby="leaderboard-title" hidden>
+          <div class="glass-panel leaderboard-layout">
+            <div class="leaderboard-header">
+              <div>
+                <p class="eyebrow">Дневна надпревара</p>
+                <h2 id="leaderboard-title" class="mission-title">Класация</h2>
+                <p class="leaderboard-subtitle">Топ IT герои на деня</p>
+              </div>
+
+              <div class="leaderboard-actions">
+                <button id="leaderboard-new-game-btn" class="button button-primary" type="button">Нова игра</button>
+                <button id="leaderboard-home-btn" class="button button-secondary" type="button">Обратно към началото</button>
+                <button id="refresh-leaderboard-btn" class="button button-subtle" type="button">Обнови класацията</button>
+              </div>
+            </div>
+
+            <p id="leaderboard-message" class="message" aria-live="polite"></p>
+
+            <div id="leaderboard-empty" class="empty-state" hidden>
+              Все още няма резултати. Бъди първият IT герой!
+            </div>
+
+            <div id="leaderboard-table-wrapper" class="table-shell" hidden>
+              <table class="leaderboard-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Място</th>
+                    <th scope="col">Име</th>
+                    <th scope="col">Точки</th>
+                    <th scope="col">Време</th>
+                    <th scope="col">Титла</th>
+                    <th scope="col">Дата</th>
+                  </tr>
+                </thead>
+                <tbody id="leaderboard-body"></tbody>
+              </table>
+            </div>
+
+            <div class="admin-row">
+              <button id="admin-btn" class="admin-link" type="button">Админ</button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div id="modal-backdrop" class="modal-backdrop" hidden>
+      <div class="glass-panel modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <h3 id="modal-title" class="modal-title"></h3>
+        <p id="modal-text" class="modal-text"></p>
+
+        <div id="modal-input-wrap" class="modal-input-wrap">
+          <label class="visually-hidden" for="modal-input">Администраторски код</label>
+          <input id="modal-input" class="name-input modal-input" type="password" autocomplete="off" />
+        </div>
+
+        <p id="modal-error" class="message" aria-live="polite"></p>
+
+        <div class="modal-actions">
+          <button id="modal-cancel-btn" class="button button-subtle" type="button">Отказ</button>
+          <button id="modal-confirm-btn" class="button button-primary" type="button">Потвърди</button>
+        </div>
+      </div>
+    </div>
+
+    <noscript>
+      <div class="noscript-box">
+        За да работи играта, трябва да включите JavaScript в браузъра.
+      </div>
+    </noscript>
+
+    <script src="/app.js" defer></script>
+  </body>
+</html>
