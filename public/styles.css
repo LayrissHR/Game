@@ -130,8 +130,7 @@ button {
 .home-actions,
 .result-actions,
 .leaderboard-actions,
-.order-actions,
-.modal-actions {
+.order-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
@@ -206,8 +205,7 @@ button {
 .home-description,
 .leaderboard-subtitle,
 .result-message,
-.promo-note,
-.modal-text {
+.promo-note {
   margin: 0;
   color: #d3e6ff;
   line-height: 1.6;
@@ -880,34 +878,6 @@ button {
   text-decoration: underline;
   cursor: pointer;
   font-size: 0.92rem;
-}
-
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 20;
-  background: rgba(2, 5, 12, 0.74);
-  display: grid;
-  place-items: center;
-  padding: 20px;
-}
-
-.modal-card {
-  width: min(460px, 100%);
-  padding: 28px;
-}
-
-.modal-title {
-  margin: 0 0 12px;
-  font-size: 1.5rem;
-}
-
-.modal-input-wrap {
-  margin-top: 16px;
-}
-
-.modal-input {
-  min-height: 54px;
 }
 
 .confetti-layer {

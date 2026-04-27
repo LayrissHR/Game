@@ -93,11 +93,6 @@ const gameState = {
   finalResult: null
 };
 
-const modalState = {
-  mode: null,
-  adminCode: ""
-};
-
 const ui = {};
 let audioContext = null;
 
@@ -162,14 +157,6 @@ function cacheElements() {
   ui.leaderboardHomeBtn = document.getElementById("leaderboard-home-btn");
   ui.refreshLeaderboardBtn = document.getElementById("refresh-leaderboard-btn");
   ui.adminBtn = document.getElementById("admin-btn");
-  ui.modalBackdrop = document.getElementById("modal-backdrop");
-  ui.modalTitle = document.getElementById("modal-title");
-  ui.modalText = document.getElementById("modal-text");
-  ui.modalInputWrap = document.getElementById("modal-input-wrap");
-  ui.modalInput = document.getElementById("modal-input");
-  ui.modalError = document.getElementById("modal-error");
-  ui.modalCancelBtn = document.getElementById("modal-cancel-btn");
-  ui.modalConfirmBtn = document.getElementById("modal-confirm-btn");
 }
 
 function bindEvents() {
@@ -184,7 +171,7 @@ function bindEvents() {
   ui.leaderboardNewGameBtn.addEventListener("click", prepareNewGame);
   ui.leaderboardHomeBtn.addEventListener("click", goHome);
   ui.refreshLeaderboardBtn.addEventListener("click", loadLeaderboard);
-  ui.adminBtn.addEventListener("click", openAdminCodeModal);
+  ui.adminBtn.addEventListener("click", requestAdminClear);
   ui.soundToggle.addEventListener("click", toggleSound);
   ui.eventModeBtn.addEventListener("click", toggleEventMode);
   ui.playerNameInput.addEventListener("input", handleNameInput);
@@ -192,19 +179,6 @@ function bindEvents() {
     if (event.key === "Enter") {
       event.preventDefault();
       startGame();
-    }
-  });
-  ui.modalCancelBtn.addEventListener("click", closeModal);
-  ui.modalConfirmBtn.addEventListener("click", handleModalConfirm);
-  ui.modalInput.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      handleModalConfirm();
-    }
-  });
-  ui.modalBackdrop.addEventListener("click", (event) => {
-    if (event.target === ui.modalBackdrop) {
-      closeModal();
     }
   });
 }
@@ -864,41 +838,17 @@ function formatDate(value) {
   });
 }
 
-function openAdminCodeModal() {
+function requestAdminClear() {
   playSound("click");
-  modalState.mode = "admin";
-  modalState.adminCode = "";
-  ui.modalTitle.textContent = "Админ достъп";
-  ui.modalText.textContent = "Въведете администраторския код. След това ще получите последно потвърждение за изчистване.";
-  ui.modalInputWrap.hidden = false;
-  ui.modalInput.value = "";
-  ui.modalInput.type = "password";
-  ui.modalInput.placeholder = "Администраторски код";
-  ui.modalConfirmBtn.textContent = "Потвърди";
-  ui.modalConfirmBtn.disabled = false;
-  ui.modalCancelBtn.disabled = false;
-  setMessage(ui.modalError, "");
-  ui.modalBackdrop.hidden = false;
-  ui.modalInput.focus();
-}
+  const adminCode = window.prompt("Въведете администраторския код:");
 
-function closeModal() {
-  modalState.mode = null;
-  ui.modalBackdrop.hidden = true;
-  ui.modalInput.value = "";
-  ui.modalConfirmBtn.disabled = false;
-  ui.modalCancelBtn.disabled = false;
-  setMessage(ui.modalError, "");
-}
-
-function handleModalConfirm() {
-  if (modalState.mode !== "admin") {
+  if (adminCode === null) {
     return;
   }
 
-  const adminCode = ui.modalInput.value.trim();
-  if (!adminCode) {
-    setMessage(ui.modalError, "Моля, въведете администраторски код.", "error");
+  const normalizedAdminCode = adminCode.trim();
+  if (!normalizedAdminCode) {
+    setMessage(ui.leaderboardMessage, "Моля, въведете администраторски код.", "error");
     return;
   }
 
@@ -907,15 +857,13 @@ function handleModalConfirm() {
     return;
   }
 
-  modalState.adminCode = adminCode;
-  clearLeaderboard(modalState.adminCode);
+  clearLeaderboard(normalizedAdminCode);
 }
 
 async function clearLeaderboard(adminCode) {
+  setMessage(ui.leaderboardMessage, "Изчистване на класацията...", "helper");
+
   try {
-    ui.modalConfirmBtn.disabled = true;
-    ui.modalCancelBtn.disabled = true;
-    setMessage(ui.modalError, "Изчистване на класацията...", "helper");
     const response = await fetch("/api/scores", {
       method: "DELETE",
       headers: {
@@ -929,18 +877,14 @@ async function clearLeaderboard(adminCode) {
       throw new Error(data.error || "Класацията не може да бъде изчистена в момента.");
     }
 
-    closeModal();
     await loadLeaderboard();
     setMessage(ui.leaderboardMessage, "Класацията беше изчистена успешно.", "success");
   } catch (error) {
     setMessage(
-      ui.modalError,
+      ui.leaderboardMessage,
       getNetworkAwareMessage(error, "Класацията не може да бъде изчистена в момента."),
       "error"
     );
-  } finally {
-    ui.modalConfirmBtn.disabled = false;
-    ui.modalCancelBtn.disabled = false;
   }
 }
 
