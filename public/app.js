@@ -869,57 +869,53 @@ function openAdminCodeModal() {
   modalState.mode = "admin";
   modalState.adminCode = "";
   ui.modalTitle.textContent = "Админ достъп";
-  ui.modalText.textContent = "Въведете администраторския код, за да продължите.";
+  ui.modalText.textContent = "Въведете администраторския код. След това ще получите последно потвърждение за изчистване.";
   ui.modalInputWrap.hidden = false;
   ui.modalInput.value = "";
   ui.modalInput.type = "password";
   ui.modalInput.placeholder = "Администраторски код";
-  ui.modalConfirmBtn.textContent = "Продължи";
+  ui.modalConfirmBtn.textContent = "Потвърди";
+  ui.modalConfirmBtn.disabled = false;
+  ui.modalCancelBtn.disabled = false;
   setMessage(ui.modalError, "");
   ui.modalBackdrop.hidden = false;
   ui.modalInput.focus();
-}
-
-function openConfirmClearModal() {
-  modalState.mode = "confirm-clear";
-  ui.modalTitle.textContent = "Потвърждение";
-  ui.modalText.textContent = "Сигурни ли сте, че искате да изчистите класацията?";
-  ui.modalInputWrap.hidden = true;
-  ui.modalConfirmBtn.textContent = "Изчисти";
-  setMessage(ui.modalError, "");
-  ui.modalBackdrop.hidden = false;
-  ui.modalConfirmBtn.focus();
 }
 
 function closeModal() {
   modalState.mode = null;
   ui.modalBackdrop.hidden = true;
   ui.modalInput.value = "";
+  ui.modalConfirmBtn.disabled = false;
+  ui.modalCancelBtn.disabled = false;
   setMessage(ui.modalError, "");
 }
 
 function handleModalConfirm() {
-  if (modalState.mode === "admin") {
-    const adminCode = ui.modalInput.value.trim();
-    if (!adminCode) {
-      setMessage(ui.modalError, "Моля, въведете администраторски код.", "error");
-      return;
-    }
-
-    modalState.adminCode = adminCode;
-    openConfirmClearModal();
+  if (modalState.mode !== "admin") {
     return;
   }
 
-  if (modalState.mode === "confirm-clear") {
-    clearLeaderboard(modalState.adminCode);
+  const adminCode = ui.modalInput.value.trim();
+  if (!adminCode) {
+    setMessage(ui.modalError, "Моля, въведете администраторски код.", "error");
+    return;
   }
+
+  const confirmed = window.confirm("Сигурни ли сте, че искате да изчистите класацията?");
+  if (!confirmed) {
+    return;
+  }
+
+  modalState.adminCode = adminCode;
+  clearLeaderboard(modalState.adminCode);
 }
 
 async function clearLeaderboard(adminCode) {
   try {
     ui.modalConfirmBtn.disabled = true;
     ui.modalCancelBtn.disabled = true;
+    setMessage(ui.modalError, "Изчистване на класацията...", "helper");
     const response = await fetch("/api/scores", {
       method: "DELETE",
       headers: {
@@ -937,9 +933,8 @@ async function clearLeaderboard(adminCode) {
     await loadLeaderboard();
     setMessage(ui.leaderboardMessage, "Класацията беше изчистена успешно.", "success");
   } catch (error) {
-    closeModal();
     setMessage(
-      ui.leaderboardMessage,
+      ui.modalError,
       getNetworkAwareMessage(error, "Класацията не може да бъде изчистена в момента."),
       "error"
     );
