@@ -2,74 +2,52 @@ const missions = [
   {
     type: "access-card",
     room: "Входна зала",
-    title: "Мисия 1: Създай защитен пропуск",
-    story: "За да влезеш в Кибер академията, трябва да избереш най-сигурния дигитален пропуск.",
+    title: "Създай защитен пропуск",
+    objective: "Отиди до входния терминал.",
+    story: "Избери най-сигурния дигитален пропуск, за да влезеш в Кибер академията.",
     options: ["123456", "ivan2000", "password", "Luna#48_Kod!"],
     correctAnswer: "Luna#48_Kod!",
     correctExplanation:
       "Достъпът е разрешен! Силната парола използва главни и малки букви, цифри и специални символи.",
-    wrongExplanation:
-      "Този пропуск е слаб и може лесно да бъде отгатнат. Най-сигурният избор е Luna#48_Kod!.",
+    wrongExplanation: "Този пропуск е слаб. Най-сигурният избор е Luna#48_Kod!.",
     note: "Силните пароли защитават профилите и личната информация."
   },
   {
     type: "email-detective",
     room: "Пощенски коридор",
-    title: "Мисия 2: Открий фалшивото съобщение",
-    story:
-      "По пътя към сървъра получаваш няколко съобщения. Едно от тях е опасно. Открий фишинг атаката.",
+    title: "Открий фалшивото съобщение",
+    objective: "Провери пощенския терминал.",
+    story: "Едно от съобщенията е фишинг. Открий опасния имейл.",
     emails: [
-      {
-        id: "schedule",
-        from: "school@academy.bg",
-        subject: "Програма за деня",
-        body: "Виж графика на учебните дейности."
-      },
-      {
-        id: "prize",
-        from: "prize-now@free-phone.win",
-        subject: "Честито! Спечели телефон!",
-        body: "Натисни тук и въведи паролата си."
-      },
-      {
-        id: "teacher",
-        from: "teacher@academy.bg",
-        subject: "Домашна работа",
-        body: "Не забравяй задачата по информационни технологии."
-      },
-      {
-        id: "library",
-        from: "library@academy.bg",
-        subject: "Нова книга",
-        body: "Добавена е нова книга в училищната библиотека."
-      }
+      { id: "schedule", from: "school@academy.bg", subject: "Програма за деня", body: "Виж графика на учебните дейности." },
+      { id: "prize", from: "prize-now@free-phone.win", subject: "Честито! Спечели телефон!", body: "Натисни тук и въведи паролата си." },
+      { id: "teacher", from: "teacher@academy.bg", subject: "Домашна работа", body: "Не забравяй задачата по информационни технологии." },
+      { id: "library", from: "library@academy.bg", subject: "Нова книга", body: "Добавена е нова книга в училищната библиотека." }
     ],
     correctEmailId: "prize",
     correctExplanation:
-      "Точно така! Това е фишинг – съобщение, което се опитва да те подмами да въведеш парола или лични данни.",
-    wrongExplanation:
-      "Провери внимателно. Опасните съобщения често обещават награди и искат парола.",
+      "Точно така! Това е фишинг – опит някой да те подмами да въведеш парола или лични данни.",
+    wrongExplanation: "Опасните съобщения често обещават награди и искат парола.",
     note: "Не въвеждай пароли в съмнителни сайтове и не натискай непознати линкове."
   },
   {
     type: "network-order",
     room: "Мрежова стая",
-    title: "Мисия 3: Свържи училищната мрежа",
-    story:
-      "За да стигнеш до сървъра, трябва да възстановиш правилната връзка между устройствата.",
+    title: "Свържи училищната мрежа",
+    objective: "Свържи мрежата.",
+    story: "Натисни устройствата в правилния ред и възстанови връзката.",
     items: ["Компютър", "Рутер", "Сървър", "Интернет"],
     correctOrder: ["Компютър", "Рутер", "Сървър", "Интернет"],
-    correctExplanation:
-      "Мрежата е възстановена! Компютърът се свързва с рутера, рутерът достига до сървъра, а сървърът комуникира с интернет.",
-    wrongExplanation:
-      "Връзката не е оптимална. Правилният ред е: Компютър → Рутер → Сървър → Интернет.",
-    note: "Компютърните мрежи свързват устройства, услуги и сървъри, за да обменят информация."
+    correctExplanation: "Мрежата е възстановена! Устройствата вече комуникират правилно.",
+    wrongExplanation: "Правилният ред е: Компютър → Рутер → Сървър → Интернет.",
+    note: "Мрежите свързват устройства и услуги, за да обменят информация."
   },
   {
     type: "switches",
     room: "Логическа лаборатория",
-    title: "Мисия 4: Активирай защитата",
-    story: "Системата за защита се включва само ако две условия са изпълнени едновременно.",
+    title: "Активирай защитата",
+    objective: "Активирай защитния панел.",
+    story: "Защитата работи само когато и двете условия са изпълнени.",
     switches: [
       { id: "power", label: "Има ток" },
       { id: "button", label: "Бутонът е включен" }
@@ -77,26 +55,21 @@ const missions = [
     requiredOn: ["power", "button"],
     correctExplanation:
       "Защитата е активирана! Това е логика И – и двете условия трябва да са изпълнени.",
-    wrongExplanation:
-      "Системата не може да се активира. При логика И всички условия трябва да са верни едновременно.",
-    note: "Логиката И се използва в програмирането, електрониката и автоматизираните системи."
+    wrongExplanation: "При логика И всички условия трябва да са верни едновременно.",
+    note: "Логиката И се използва в програмиране, електроника и автоматизация."
   },
   {
     type: "terminal-choice",
     room: "Сървърна стая",
-    title: "Мисия 5: Активирай защитната стена",
-    story:
-      "Стигна до сървърната стая. Последната задача е да избереш правилното действие в алгоритъма, за да охладиш сървъра и да активираш защитата.",
-    codeBlock:
-      "Ако температурата е над 30 градуса:\n    включи вентилатора\nИначе:\n    включи отоплението",
-    question:
-      "Температурата в сървърната стая е 35 градуса. Коя команда трябва да се изпълни?",
+    title: "Активирай защитната стена",
+    objective: "Намери сървърната конзола.",
+    story: "Избери правилната команда, за да охладиш сървъра и да включиш защитната стена.",
+    codeBlock: "Ако температурата е над 30 градуса:\n    включи вентилатора\nИначе:\n    включи отоплението",
+    question: "Температурата в сървърната стая е 35 градуса. Коя команда трябва да се изпълни?",
     options: ["включи вентилатора", "включи отоплението", "изключи сървъра", "игнорирай предупреждението"],
     correctAnswer: "включи вентилатора",
-    correctExplanation:
-      "Сървърът е защитен! 35 е повече от 30, затова алгоритъмът включва вентилатора.",
-    wrongExplanation:
-      "Провери условието. Когато температурата е над 30 градуса, трябва да се включи вентилаторът.",
+    correctExplanation: "Сървърът е защитен! 35 е повече от 30, затова алгоритъмът включва вентилатора.",
+    wrongExplanation: "Когато температурата е над 30 градуса, трябва да се включи вентилаторът.",
     note: "Алгоритмите използват условия, за да вземат правилни решения."
   }
 ];
@@ -116,6 +89,84 @@ const titleBadgeClasses = {
 };
 
 const topLabels = ["Главен защитник", "Мрежов герой", "Кибер помощник"];
+const mapWidth = 900;
+const mapHeight = 520;
+const controls = {
+  ArrowUp: "up",
+  KeyW: "up",
+  ArrowDown: "down",
+  KeyS: "down",
+  ArrowLeft: "left",
+  KeyA: "left",
+  ArrowRight: "right",
+  KeyD: "right"
+};
+
+const rooms = [
+  { name: "Входна зала", x: 20, y: 20, w: 210, h: 210 },
+  { name: "Пощенски коридор", x: 260, y: 20, w: 250, h: 170 },
+  { name: "Коридор с вируси", x: 540, y: 20, w: 150, h: 360 },
+  { name: "Мрежова стая", x: 710, y: 20, w: 170, h: 170 },
+  { name: "Логическа лаборатория", x: 20, y: 300, w: 330, h: 200 },
+  { name: "Сървърна стая", x: 560, y: 300, w: 320, h: 200 }
+];
+
+const walls = [
+  { x: 0, y: 0, w: 900, h: 12 },
+  { x: 0, y: 508, w: 900, h: 12 },
+  { x: 0, y: 0, w: 12, h: 520 },
+  { x: 888, y: 0, w: 12, h: 520 },
+  { x: 235, y: 0, w: 16, h: 92 },
+  { x: 235, y: 156, w: 16, h: 54 },
+  { x: 515, y: 0, w: 16, h: 84 },
+  { x: 515, y: 148, w: 16, h: 42 },
+  { x: 695, y: 0, w: 16, h: 88 },
+  { x: 695, y: 152, w: 16, h: 48 },
+  { x: 0, y: 235, w: 146, h: 16 },
+  { x: 210, y: 235, w: 160, h: 16 },
+  { x: 390, y: 235, w: 170, h: 16 },
+  { x: 710, y: 205, w: 178, h: 16 },
+  { x: 355, y: 285, w: 16, h: 223 },
+  { x: 545, y: 285, w: 16, h: 67 },
+  { x: 545, y: 416, w: 16, h: 92 },
+  { x: 12, y: 285, w: 134, h: 16 },
+  { x: 210, y: 285, w: 132, h: 16 },
+  { x: 560, y: 285, w: 328, h: 16 }
+];
+
+const doors = [
+  { id: "door-1", label: "Поща", x: 235, y: 92, w: 16, h: 64, requiredMission: 0 },
+  { id: "door-2", label: "Коридор", x: 515, y: 84, w: 16, h: 64, requiredMission: 1 },
+  { id: "door-3", label: "Мрежа", x: 695, y: 88, w: 16, h: 64, requiredMission: 1 },
+  { id: "door-4", label: "Логика", x: 146, y: 235, w: 64, h: 16, requiredMission: 2 },
+  { id: "door-5", label: "Сървър", x: 545, y: 352, w: 16, h: 64, requiredMission: 3 }
+];
+
+const interactables = [
+  { id: "mission-1", missionIndex: 0, label: "Терминал за достъп", className: "terminal", x: 102, y: 88, w: 58, h: 58, prompt: "Натисни E, за да създадеш защитен пропуск" },
+  { id: "mission-2", missionIndex: 1, label: "Пощенски терминал", className: "mail-station", x: 355, y: 78, w: 58, h: 58, prompt: "Натисни E, за да провериш съобщенията" },
+  { id: "mission-3", missionIndex: 2, label: "Мрежова конзола", className: "network-console", x: 765, y: 76, w: 58, h: 58, prompt: "Натисни E, за да свържеш мрежата" },
+  { id: "mission-4", missionIndex: 3, label: "Защитен панел", className: "logic-panel", x: 146, y: 372, w: 62, h: 62, prompt: "Натисни E, за да активираш защитата" },
+  { id: "mission-5", missionIndex: 4, label: "Сървърна конзола", className: "server-console", x: 704, y: 374, w: 68, h: 68, prompt: "Натисни E, за да активираш защитната стена" }
+];
+
+const collectibles = [
+  { id: "key-1", x: 300, y: 138, w: 22, h: 22, collected: false },
+  { id: "key-2", x: 615, y: 236, w: 22, h: 22, collected: false },
+  { id: "key-3", x: 452, y: 372, w: 22, h: 22, collected: false }
+];
+
+const hazards = [
+  { id: "virus-1", x: 585, y: 70, w: 26, h: 26, dx: 1.1, dy: 0, minX: 555, maxX: 660 },
+  { id: "virus-2", x: 638, y: 170, w: 26, h: 26, dx: 0, dy: 1, minY: 120, maxY: 285 },
+  { id: "virus-3", x: 426, y: 236, w: 26, h: 26, dx: 1.05, dy: 0, minX: 390, maxX: 528 }
+];
+
+const securityDoors = [
+  { id: "security-door", label: "Сигурност", x: 574, y: 310, w: 78, h: 34, correct: true },
+  { id: "spam-door", label: "Спам", x: 574, y: 354, w: 78, h: 34, correct: false },
+  { id: "games-door", label: "Игри", x: 574, y: 398, w: 78, h: 34, correct: false }
+];
 
 const gameState = {
   playerName: "",
@@ -133,6 +184,23 @@ const gameState = {
   finalResult: null
 };
 
+const mapState = {
+  player: { x: 76, y: 146, width: 32, height: 32, speed: 3 },
+  pressedKeys: {},
+  currentZone: "Входна зала",
+  activeMissionIndex: 0,
+  completedMissions: [],
+  collectedKeys: 0,
+  doorBonusDone: false,
+  doorMessageCooldown: false,
+  virusCooldown: false,
+  isMissionOpen: false,
+  isGameOver: false,
+  nearbyInteractable: null,
+  interactionCooldown: false,
+  loopStarted: false
+};
+
 const ui = {};
 let audioContext = null;
 
@@ -146,13 +214,17 @@ function init() {
   loadPreferences();
   updateSoundButton();
   syncEventModeState();
+  buildMap();
+  renderRoute();
   showScreen(window.location.pathname === "/leaderboard" ? "leaderboard" : "home", false);
+  startGameLoop();
 }
 
 function cacheElements() {
   ui.body = document.body;
   ui.screens = {
     home: document.getElementById("screen-home"),
+    instructions: document.getElementById("screen-instructions"),
     game: document.getElementById("screen-game"),
     result: document.getElementById("screen-result"),
     leaderboard: document.getElementById("screen-leaderboard")
@@ -162,23 +234,34 @@ function cacheElements() {
   ui.soundToggle = document.getElementById("sound-toggle");
   ui.eventModeBtn = document.getElementById("event-mode-btn");
   ui.startBtn = document.getElementById("start-btn");
+  ui.beginMapBtn = document.getElementById("begin-map-btn");
   ui.homeLeaderboardBtn = document.getElementById("home-leaderboard-btn");
   ui.playerStatus = document.getElementById("player-status");
   ui.roomStatus = document.getElementById("room-status");
   ui.missionCounter = document.getElementById("mission-counter");
   ui.scoreCounter = document.getElementById("score-counter");
   ui.timerCounter = document.getElementById("timer-counter");
-  ui.progressFill = document.getElementById("progress-fill");
-  ui.missionMap = document.getElementById("mission-map");
+  ui.keyCounter = document.getElementById("key-counter");
+  ui.objectiveText = document.getElementById("objective-text");
+  ui.route = document.getElementById("mission-route");
+  ui.mapMessage = document.getElementById("map-message");
+  ui.academyMap = document.getElementById("academy-map");
+  ui.mapLayers = document.getElementById("map-layers");
+  ui.playerAvatar = document.getElementById("player-avatar");
+  ui.playerLabel = document.getElementById("player-label");
+  ui.interactionPrompt = document.getElementById("interaction-prompt");
+  ui.objectiveMarker = document.getElementById("objective-marker");
+  ui.toastArea = document.getElementById("toast-area");
+  ui.missionModal = document.getElementById("mission-modal");
+  ui.missionKicker = document.getElementById("mission-kicker");
   ui.missionTitle = document.getElementById("mission-title");
   ui.missionStory = document.getElementById("mission-story");
-  ui.roomScene = document.getElementById("room-scene");
   ui.interactionArea = document.getElementById("interaction-area");
   ui.feedbackPanel = document.getElementById("feedback-panel");
   ui.feedbackBadge = document.getElementById("feedback-badge");
   ui.feedbackText = document.getElementById("feedback-text");
   ui.feedbackNote = document.getElementById("feedback-note");
-  ui.nextMissionBtn = document.getElementById("next-mission-btn");
+  ui.continueMapBtn = document.getElementById("continue-map-btn");
   ui.resultSummary = document.getElementById("result-summary");
   ui.finalBadge = document.getElementById("final-badge");
   ui.saveStatus = document.getElementById("save-status");
@@ -194,15 +277,13 @@ function cacheElements() {
   ui.leaderboardHomeBtn = document.getElementById("leaderboard-home-btn");
   ui.refreshLeaderboardBtn = document.getElementById("refresh-leaderboard-btn");
   ui.adminBtn = document.getElementById("admin-btn");
-  ui.transitionOverlay = document.getElementById("transition-overlay");
-  ui.transitionTitle = document.getElementById("transition-title");
-  ui.transitionRoom = document.getElementById("transition-room");
 }
 
 function bindEvents() {
-  ui.startBtn.addEventListener("click", startGame);
+  ui.startBtn.addEventListener("click", showInstructions);
+  ui.beginMapBtn.addEventListener("click", startGame);
   ui.homeLeaderboardBtn.addEventListener("click", () => showScreen("leaderboard"));
-  ui.nextMissionBtn.addEventListener("click", goToNextMission);
+  ui.continueMapBtn.addEventListener("click", closeMissionModal);
   ui.resultNewGameBtn.addEventListener("click", prepareNewGame);
   ui.resultLeaderboardBtn.addEventListener("click", () => showScreen("leaderboard"));
   ui.resultHomeBtn.addEventListener("click", goHome);
@@ -216,9 +297,11 @@ function bindEvents() {
   ui.playerNameInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
       event.preventDefault();
-      startGame();
+      showInstructions();
     }
   });
+  document.addEventListener("keydown", handleKeyDown);
+  document.addEventListener("keyup", handleKeyUp);
 }
 
 function handleRouteChange() {
@@ -248,56 +331,44 @@ function showScreen(screenName, pushState = true) {
   }
 }
 
-function handleNameInput() {
-  const sanitized = ui.playerNameInput.value.replace(/[\u0000-\u001F\u007F]/g, "");
-  if (sanitized !== ui.playerNameInput.value) {
-    ui.playerNameInput.value = sanitized;
-  }
-  setMessage(ui.homeError, "");
-}
-
-function sanitizeDisplayText(value) {
-  return String(value ?? "")
-    .replace(/[\u0000-\u001F\u007F<>]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function sanitizeNameInput(value) {
-  return sanitizeDisplayText(value);
-}
-
-function startGame() {
+function showInstructions() {
   const playerName = sanitizeNameInput(ui.playerNameInput.value);
-
   if (!playerName) {
     setMessage(ui.homeError, "Моля, въведи име или псевдоним.", "error");
     ui.playerNameInput.focus();
     return;
   }
-
   if (playerName.length > 20) {
     setMessage(ui.homeError, "Името трябва да бъде до 20 символа.", "error");
     ui.playerNameInput.focus();
     return;
   }
-
+  gameState.playerName = playerName;
+  ui.playerNameInput.value = playerName;
+  setMessage(ui.homeError, "");
   playSound("click");
+  showScreen("instructions");
+}
+
+function startGame() {
+  const playerName = gameState.playerName || sanitizeNameInput(ui.playerNameInput.value);
   resetGameState();
   gameState.playerName = playerName;
   gameState.startTime = Date.now();
-  ui.playerNameInput.value = playerName;
-  setMessage(ui.homeError, "");
+  ui.playerLabel.textContent = playerName;
   setMessage(ui.saveStatus, "");
   clearConfetti();
   startTimer();
   showScreen("game");
-  renderMission();
+  updateHud();
+  renderRoute();
+  renderMapState();
+  showToast("Мисията започва! Намери първия терминал.", "helper");
+  playSound("unlock");
 }
 
 function resetGameState() {
   stopTimer();
-  gameState.playerName = "";
   gameState.currentMissionIndex = 0;
   gameState.score = 0;
   gameState.startTime = null;
@@ -307,12 +378,32 @@ function resetGameState() {
   gameState.switchStates = {};
   gameState.hasSavedResult = false;
   gameState.finalResult = null;
+  mapState.player.x = 76;
+  mapState.player.y = 146;
+  mapState.pressedKeys = {};
+  mapState.currentZone = "Входна зала";
+  mapState.activeMissionIndex = 0;
+  mapState.completedMissions = [];
+  mapState.collectedKeys = 0;
+  mapState.doorBonusDone = false;
+  mapState.doorMessageCooldown = false;
+  mapState.virusCooldown = false;
+  mapState.isMissionOpen = false;
+  mapState.isGameOver = false;
+  mapState.nearbyInteractable = null;
+  mapState.interactionCooldown = false;
+  collectibles.forEach((item) => {
+    item.collected = false;
+  });
+  hazards[0].x = 585;
+  hazards[1].y = 170;
+  hazards[2].x = 426;
   ui.resultSummary.replaceChildren();
   ui.interactionArea.replaceChildren();
-  ui.roomScene.replaceChildren();
-  ui.nextMissionBtn.hidden = true;
   ui.feedbackPanel.hidden = true;
-  ui.feedbackPanel.className = "feedback-panel";
+  ui.continueMapBtn.hidden = true;
+  ui.toastArea.replaceChildren();
+  buildMap();
 }
 
 function prepareNewGame() {
@@ -322,171 +413,367 @@ function prepareNewGame() {
 function goHome() {
   playSound("click");
   resetGameState();
+  gameState.playerName = "";
   ui.playerNameInput.value = "";
+  ui.missionModal.hidden = true;
   showScreen("home");
 }
 
-function renderMission() {
-  const mission = missions[gameState.currentMissionIndex];
-  if (!mission) {
+function handleNameInput() {
+  const sanitized = ui.playerNameInput.value.replace(/[\u0000-\u001F\u007F]/g, "");
+  if (sanitized !== ui.playerNameInput.value) {
+    ui.playerNameInput.value = sanitized;
+  }
+  setMessage(ui.homeError, "");
+}
+
+function sanitizeDisplayText(value) {
+  return String(value ?? "").replace(/[\u0000-\u001F\u007F<>]/g, "").replace(/\s+/g, " ").trim();
+}
+
+function sanitizeNameInput(value) {
+  return sanitizeDisplayText(value);
+}
+
+function handleKeyDown(event) {
+  if (controls[event.code]) {
+    mapState.pressedKeys[controls[event.code]] = true;
+    event.preventDefault();
+  }
+
+  if (event.code === "KeyE") {
+    event.preventDefault();
+    tryInteraction();
+  }
+}
+
+function handleKeyUp(event) {
+  if (controls[event.code]) {
+    mapState.pressedKeys[controls[event.code]] = false;
+    event.preventDefault();
+  }
+}
+
+function startGameLoop() {
+  if (mapState.loopStarted) {
+    return;
+  }
+  mapState.loopStarted = true;
+  requestAnimationFrame(gameLoop);
+}
+
+function gameLoop() {
+  if (!mapState.isMissionOpen && !mapState.isGameOver && ui.screens.game.classList.contains("active")) {
+    updatePlayerMovement();
+    updateHazards();
+    checkCollectibles();
+    checkSecurityDoors();
+    checkHazards();
+    checkCurrentZone();
+    checkNearbyInteractable();
+    renderMapState();
+  }
+  requestAnimationFrame(gameLoop);
+}
+
+function buildMap() {
+  const fragment = document.createDocumentFragment();
+
+  rooms.forEach((room) => {
+    const element = createMapElement("room-label", room);
+    element.textContent = room.name;
+    fragment.append(element);
+  });
+
+  walls.forEach((wall) => fragment.append(createMapElement("wall", wall)));
+  doors.forEach((door) => {
+    const element = createMapElement("door locked", door);
+    element.dataset.id = door.id;
+    element.textContent = door.label;
+    fragment.append(element);
+  });
+
+  addGlowPath(fragment, { x: 86, y: 156, w: 760, h: 10 });
+  addGlowPath(fragment, { x: 612, y: 70, w: 10, h: 382 });
+  addGlowPath(fragment, { x: 160, y: 430, w: 600, h: 10 });
+
+  interactables.forEach((item) => {
+    const element = createMapElement(`interactable ${item.className}`, item);
+    element.dataset.id = item.id;
+    element.innerHTML = `<span></span><strong>${item.label}</strong>`;
+    fragment.append(element);
+  });
+
+  collectibles.forEach((item) => {
+    const element = createMapElement("collectible-key", item);
+    element.dataset.id = item.id;
+    element.textContent = "◆";
+    fragment.append(element);
+  });
+
+  hazards.forEach((hazard) => {
+    const element = createMapElement("virus", hazard);
+    element.dataset.id = hazard.id;
+    element.textContent = "!";
+    fragment.append(element);
+  });
+
+  securityDoors.forEach((door) => {
+    const element = createMapElement("choice-door", door);
+    element.dataset.id = door.id;
+    element.textContent = door.label;
+    fragment.append(element);
+  });
+
+  ui.mapLayers.replaceChildren(fragment);
+  updateDoorVisuals();
+}
+
+function addGlowPath(fragment, rect) {
+  fragment.append(createMapElement("glow-path", rect));
+}
+
+function createMapElement(className, rect) {
+  const element = document.createElement("div");
+  element.className = className;
+  element.style.left = `${rect.x}px`;
+  element.style.top = `${rect.y}px`;
+  element.style.width = `${rect.w}px`;
+  element.style.height = `${rect.h}px`;
+  return element;
+}
+
+function updatePlayerMovement() {
+  const player = mapState.player;
+  let dx = 0;
+  let dy = 0;
+
+  if (mapState.pressedKeys.left) dx -= 1;
+  if (mapState.pressedKeys.right) dx += 1;
+  if (mapState.pressedKeys.up) dy -= 1;
+  if (mapState.pressedKeys.down) dy += 1;
+
+  if (dx === 0 && dy === 0) {
     return;
   }
 
-  resetMissionInteractionState();
+  if (dx !== 0 && dy !== 0) {
+    dx *= 0.707;
+    dy *= 0.707;
+  }
+
+  movePlayer(dx * player.speed, 0);
+  movePlayer(0, dy * player.speed);
+}
+
+function movePlayer(dx, dy) {
+  const player = mapState.player;
+  const next = {
+    x: clamp(player.x + dx, 0, mapWidth - player.width),
+    y: clamp(player.y + dy, 0, mapHeight - player.height),
+    w: player.width,
+    h: player.height
+  };
+
+  if (collidesWithBlocked(next)) {
+    return;
+  }
+
+  player.x = next.x;
+  player.y = next.y;
+}
+
+function collidesWithBlocked(rect) {
+  const blockedWalls = walls.some((wall) => rectsOverlap(rect, wall));
+  if (blockedWalls) {
+    return true;
+  }
+
+  const blockedDoor = doors.find((door) => !isDoorUnlocked(door) && rectsOverlap(rect, door));
+  if (blockedDoor) {
+    setMapMessage("Тази зона все още е заключена.");
+    return true;
+  }
+
+  return false;
+}
+
+function updateHazards() {
+  hazards.forEach((hazard) => {
+    hazard.x += hazard.dx || 0;
+    hazard.y += hazard.dy || 0;
+
+    if (hazard.dx && (hazard.x <= hazard.minX || hazard.x >= hazard.maxX)) {
+      hazard.dx *= -1;
+      hazard.x = clamp(hazard.x, hazard.minX, hazard.maxX);
+    }
+
+    if (hazard.dy && (hazard.y <= hazard.minY || hazard.y >= hazard.maxY)) {
+      hazard.dy *= -1;
+      hazard.y = clamp(hazard.y, hazard.minY, hazard.maxY);
+    }
+  });
+}
+
+function checkCollectibles() {
+  const playerRect = getPlayerRect();
+  collectibles.forEach((item) => {
+    if (!item.collected && rectsOverlap(playerRect, item)) {
+      item.collected = true;
+      mapState.collectedKeys += 1;
+      gameState.score += 10;
+      showToast("Събран защитен ключ! +10 точки", "success");
+      playSound("correct");
+      updateHud();
+    }
+  });
+}
+
+function checkSecurityDoors() {
+  const playerRect = getPlayerRect();
+  const touchedDoor = securityDoors.find((door) => rectsOverlap(playerRect, door));
+  if (!touchedDoor || mapState.doorMessageCooldown) {
+    return;
+  }
+
+  mapState.doorMessageCooldown = true;
+  window.setTimeout(() => {
+    mapState.doorMessageCooldown = false;
+  }, 1200);
+
+  if (touchedDoor.correct && !mapState.doorBonusDone) {
+    mapState.doorBonusDone = true;
+    gameState.score += 20;
+    showToast("Избра правилната врата: Сигурност! +20 точки", "success");
+    playSound("correct");
+    updateHud();
+    renderMapState();
+    return;
+  }
+
+  if (!touchedDoor.correct) {
+    showToast("Тази врата не води към защитата. Опитай със „Сигурност“.", "error");
+    playSound("wrong");
+  }
+}
+
+function checkHazards() {
+  if (mapState.virusCooldown) {
+    return;
+  }
+
+  const playerRect = getPlayerRect();
+  const touched = hazards.some((hazard) => rectsOverlap(playerRect, hazard));
+  if (!touched) {
+    return;
+  }
+
+  gameState.score = Math.max(0, gameState.score - 10);
+  mapState.virusCooldown = true;
+  ui.playerAvatar.classList.add("hit");
+  showToast("Докосна вирус! -10 точки", "error");
+  playSound("wrong");
+  updateHud();
+  window.setTimeout(() => {
+    mapState.virusCooldown = false;
+    ui.playerAvatar.classList.remove("hit");
+  }, 1500);
+}
+
+function checkCurrentZone() {
+  const center = {
+    x: mapState.player.x + mapState.player.width / 2,
+    y: mapState.player.y + mapState.player.height / 2
+  };
+  const zone = rooms.find((room) => center.x >= room.x && center.x <= room.x + room.w && center.y >= room.y && center.y <= room.y + room.h);
+  if (zone && zone.name !== mapState.currentZone) {
+    mapState.currentZone = zone.name;
+    updateHud();
+  }
+}
+
+function checkNearbyInteractable() {
+  const playerRect = inflateRect(getPlayerRect(), 20);
+  mapState.nearbyInteractable = interactables.find((item) => rectsOverlap(playerRect, item)) || null;
+
+  if (!mapState.nearbyInteractable) {
+    ui.interactionPrompt.hidden = true;
+    return;
+  }
+
+  const item = mapState.nearbyInteractable;
+  ui.interactionPrompt.hidden = false;
+  ui.interactionPrompt.textContent = item.missionIndex === mapState.activeMissionIndex ? "Натисни E" : "Заключено";
+  ui.interactionPrompt.style.left = `${item.x + item.w / 2}px`;
+  ui.interactionPrompt.style.top = `${item.y - 12}px`;
+  setMapMessage(item.missionIndex === mapState.activeMissionIndex ? item.prompt : "Тази зона все още е заключена.");
+}
+
+function tryInteraction() {
+  if (mapState.isMissionOpen || mapState.isGameOver || mapState.interactionCooldown || !ui.screens.game.classList.contains("active")) {
+    return;
+  }
+
+  const item = mapState.nearbyInteractable;
+  if (!item) {
+    return;
+  }
+
+  mapState.interactionCooldown = true;
+  window.setTimeout(() => {
+    mapState.interactionCooldown = false;
+  }, 350);
+
+  if (item.missionIndex !== mapState.activeMissionIndex) {
+    showToast("Тази зона все още е заключена.", "error");
+    return;
+  }
+
+  openMissionModal(item.missionIndex);
+}
+
+function openMissionModal(index) {
+  const mission = missions[index];
+  mapState.isMissionOpen = true;
+  gameState.selectedOrder = [];
+  gameState.switchStates = {};
+  ui.missionKicker.textContent = `Мисия ${index + 1} от ${missions.length}`;
   ui.missionTitle.textContent = mission.title;
   ui.missionStory.textContent = mission.story;
   ui.feedbackPanel.hidden = true;
   ui.feedbackPanel.className = "feedback-panel";
-  ui.nextMissionBtn.hidden = true;
-
-  renderMissionMap();
-  renderRoomScene(mission);
+  ui.continueMapBtn.hidden = true;
   renderInteraction(mission);
-  updateGameHeader();
+  ui.missionModal.hidden = false;
+  playSound("click");
 }
 
-function resetMissionInteractionState() {
-  gameState.selectedOrder = [];
-  gameState.switchStates = {};
-  ui.interactionArea.replaceChildren();
-  ui.roomScene.replaceChildren();
-}
+function closeMissionModal() {
+  ui.missionModal.hidden = true;
+  mapState.isMissionOpen = false;
+  updateHud();
+  renderRoute();
 
-function renderMissionMap() {
-  const fragment = document.createDocumentFragment();
-
-  missions.forEach((mission, index) => {
-    const item = document.createElement("div");
-    item.className = "map-node";
-
-    if (index < gameState.currentMissionIndex) {
-      item.classList.add("completed");
-    } else if (index === gameState.currentMissionIndex) {
-      item.classList.add("current");
-    } else {
-      item.classList.add("locked");
-    }
-
-    const marker = document.createElement("span");
-    marker.className = "map-node__marker";
-    marker.textContent = index < gameState.currentMissionIndex ? "✓" : String(index + 1);
-
-    const label = document.createElement("span");
-    label.className = "map-node__label";
-    label.textContent = mission.room;
-
-    item.append(marker, label);
-    fragment.append(item);
-  });
-
-  ui.missionMap.replaceChildren(fragment);
-}
-
-function updateMissionMap() {
-  renderMissionMap();
-}
-
-function renderRoomScene(mission) {
-  ui.roomScene.className = `room-scene scene-${mission.type}`;
-
-  const sceneRenderers = {
-    "access-card": renderDoorScene,
-    "email-detective": renderMailScene,
-    "network-order": renderNetworkScene,
-    switches: renderSwitchScene,
-    "terminal-choice": renderServerScene
-  };
-
-  const renderer = sceneRenderers[mission.type];
-  if (renderer) {
-    renderer();
+  if (mapState.completedMissions.length >= missions.length) {
+    finishGame();
+    return;
   }
-}
 
-function renderDoorScene() {
-  ui.roomScene.innerHTML = `
-    <div class="cyber-door">
-      <span class="door-light"></span>
-      <div class="door-core"></div>
-      <div class="door-lock">ЗАКЛ</div>
-    </div>
-    <div class="scene-console"><span></span><span></span><span></span></div>
-  `;
-}
-
-function renderMailScene() {
-  ui.roomScene.innerHTML = `
-    <div class="mail-corridor">
-      <span class="mail-terminal"></span>
-      <span class="floating-mail mail-one"></span>
-      <span class="floating-mail mail-two"></span>
-      <span class="floating-mail mail-three"></span>
-    </div>
-    <div class="shield-holo">ЩИТ</div>
-  `;
-}
-
-function renderNetworkScene() {
-  ui.roomScene.innerHTML = `
-    <div class="network-visual">
-      <span class="device-dot"></span>
-      <span class="device-dot"></span>
-      <span class="device-dot"></span>
-      <span class="device-dot"></span>
-    </div>
-  `;
-}
-
-function renderSwitchScene() {
-  ui.roomScene.innerHTML = `
-    <div class="control-visual">
-      <span class="warning-light"></span>
-      <div class="shield-core">ЩИТ</div>
-      <span class="warning-light"></span>
-    </div>
-  `;
-}
-
-function renderServerScene() {
-  ui.roomScene.innerHTML = `
-    <div class="server-room-visual">
-      <div class="server-rack"><span></span><span></span><span></span><span></span></div>
-      <div class="fan-indicator">35°</div>
-      <div class="shield-core">ЩИТ</div>
-    </div>
-  `;
+  showToast("Достъпът е разрешен. Следващата зона е отключена.", "success");
+  playSound("unlock");
 }
 
 function renderInteraction(mission) {
-  if (mission.type === "access-card") {
-    renderAccessCardMission(mission);
-    return;
-  }
-
-  if (mission.type === "email-detective") {
-    renderEmailDetectiveMission(mission);
-    return;
-  }
-
-  if (mission.type === "network-order") {
-    renderNetworkOrderMission(mission);
-    return;
-  }
-
-  if (mission.type === "switches") {
-    renderSwitchesMission(mission);
-    return;
-  }
-
-  if (mission.type === "terminal-choice") {
-    renderTerminalChoiceMission(mission);
-  }
+  if (mission.type === "access-card") renderAccessCardMission(mission);
+  if (mission.type === "email-detective") renderEmailDetectiveMission(mission);
+  if (mission.type === "network-order") renderNetworkOrderMission(mission);
+  if (mission.type === "switches") renderSwitchesMission(mission);
+  if (mission.type === "terminal-choice") renderTerminalChoiceMission(mission);
 }
 
 function renderAccessCardMission(mission) {
   const grid = document.createElement("div");
   grid.className = "access-card-grid";
-
   mission.options.forEach((option) => {
     const button = document.createElement("button");
     button.type = "button";
@@ -499,149 +786,97 @@ function renderAccessCardMission(mission) {
     });
     grid.append(button);
   });
-
   ui.interactionArea.replaceChildren(grid);
 }
 
 function renderEmailDetectiveMission(mission) {
   const grid = document.createElement("div");
   grid.className = "email-grid";
-
   mission.emails.forEach((email) => {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "email-card";
     button.dataset.value = email.id;
-    button.innerHTML = `
-      <span class="email-card__from">От: ${email.from}</span>
-      <strong>${email.subject}</strong>
-      <span>${email.body}</span>
-    `;
+    button.innerHTML = `<span class="email-card__from">От: ${email.from}</span><strong>${email.subject}</strong><span>${email.body}</span>`;
     button.addEventListener("click", () => {
       handleMissionResult(email.id === mission.correctEmailId, { selected: email.id });
       lockChoiceButtons(".email-card", email.id, mission.correctEmailId);
     });
     grid.append(button);
   });
-
   ui.interactionArea.replaceChildren(grid);
 }
 
 function renderNetworkOrderMission(mission) {
   const wrapper = document.createElement("div");
   wrapper.className = "network-builder";
-
   const slots = document.createElement("div");
   slots.className = "network-slots";
-  slots.dataset.role = "slots";
+  for (let index = 0; index < mission.correctOrder.length; index += 1) {
+    const slot = document.createElement("div");
+    slot.className = `network-slot ${gameState.selectedOrder[index] ? "filled" : ""}`;
+    slot.innerHTML = `<span>${index + 1}</span><strong>${gameState.selectedOrder[index] || "Избери устройство"}</strong>`;
+    slots.append(slot);
+  }
 
   const devices = document.createElement("div");
   devices.className = "network-devices";
-
   mission.items.forEach((item) => {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "network-device";
-    button.dataset.item = item;
-    button.innerHTML = `<span class="device-icon">${getDeviceIcon(item)}</span><strong>${item}</strong>`;
     button.disabled = gameState.selectedOrder.includes(item);
-    button.classList.toggle("selected", gameState.selectedOrder.includes(item));
-    button.addEventListener("click", () => handleNetworkSelection(item, mission));
+    button.innerHTML = `<span class="device-icon">${getDeviceIcon(item)}</span><strong>${item}</strong>`;
+    button.addEventListener("click", () => {
+      if (gameState.selectedOrder.length >= mission.correctOrder.length) return;
+      gameState.selectedOrder.push(item);
+      renderNetworkOrderMission(mission);
+      playSound("click");
+    });
     devices.append(button);
   });
 
   const actions = document.createElement("div");
   actions.className = "order-actions";
-
-  const resetButton = document.createElement("button");
-  resetButton.type = "button";
-  resetButton.className = "button button-secondary";
-  resetButton.textContent = "Изчисти връзката";
-  resetButton.addEventListener("click", () => {
-    gameState.selectedOrder = [];
-    renderNetworkOrderMission(mission);
-    playSound("click");
-  });
-
   const confirmButton = document.createElement("button");
   confirmButton.type = "button";
   confirmButton.className = "button button-primary";
   confirmButton.textContent = "Потвърди връзката";
   confirmButton.disabled = gameState.selectedOrder.length !== mission.correctOrder.length;
-  confirmButton.addEventListener("click", () => confirmNetworkOrder(mission));
+  confirmButton.addEventListener("click", () => {
+    const isCorrect = mission.correctOrder.every((item, index) => gameState.selectedOrder[index] === item);
+    handleMissionResult(isCorrect, { selectedOrder: [...gameState.selectedOrder] });
+    Array.from(ui.interactionArea.querySelectorAll("button")).forEach((button) => {
+      button.disabled = true;
+      button.classList.add("is-locked");
+    });
+    markNetworkSlots(mission);
+  });
 
-  actions.append(resetButton, confirmButton);
+  const clearButton = document.createElement("button");
+  clearButton.type = "button";
+  clearButton.className = "button button-secondary";
+  clearButton.textContent = "Изчисти връзката";
+  clearButton.addEventListener("click", () => {
+    gameState.selectedOrder = [];
+    renderNetworkOrderMission(mission);
+    playSound("click");
+  });
+
+  actions.append(confirmButton, clearButton);
   wrapper.append(slots, devices, actions);
   ui.interactionArea.replaceChildren(wrapper);
-  renderNetworkSlots(mission);
 }
 
-function renderNetworkSlots(mission, answered = false) {
-  const slots = ui.interactionArea.querySelector('[data-role="slots"]');
-  if (!slots) {
-    return;
-  }
-
-  const fragment = document.createDocumentFragment();
-
-  for (let index = 0; index < mission.correctOrder.length; index += 1) {
-    const slot = document.createElement("div");
-    slot.className = "network-slot";
-
-    const selectedItem = gameState.selectedOrder[index];
-    if (selectedItem) {
-      slot.classList.add("filled");
-      slot.innerHTML = `<span>${index + 1}</span><strong>${selectedItem}</strong>`;
-    } else {
-      slot.innerHTML = `<span>${index + 1}</span><strong>Очаква избор</strong>`;
-    }
-
-    if (answered && selectedItem) {
-      slot.classList.add(selectedItem === mission.correctOrder[index] ? "correct" : "incorrect");
-    }
-
-    fragment.append(slot);
-  }
-
-  slots.replaceChildren(fragment);
-}
-
-function handleNetworkSelection(item, mission) {
-  if (gameState.answers[gameState.currentMissionIndex]) {
-    return;
-  }
-
-  if (gameState.selectedOrder.includes(item) || gameState.selectedOrder.length >= mission.correctOrder.length) {
-    return;
-  }
-
-  gameState.selectedOrder.push(item);
-  renderNetworkOrderMission(mission);
-  playSound("click");
-}
-
-function confirmNetworkOrder(mission) {
-  if (gameState.answers[gameState.currentMissionIndex]) {
-    return;
-  }
-
-  if (gameState.selectedOrder.length !== mission.correctOrder.length) {
-    return;
-  }
-
-  const isCorrect = mission.correctOrder.every((item, index) => gameState.selectedOrder[index] === item);
-  handleMissionResult(isCorrect, { selectedOrder: [...gameState.selectedOrder] });
-  renderNetworkSlots(mission, true);
-  Array.from(ui.interactionArea.querySelectorAll("button")).forEach((button) => {
-    button.disabled = true;
-    button.classList.add("is-locked");
+function markNetworkSlots(mission) {
+  Array.from(ui.interactionArea.querySelectorAll(".network-slot")).forEach((slot, index) => {
+    slot.classList.add(gameState.selectedOrder[index] === mission.correctOrder[index] ? "correct" : "incorrect");
   });
 }
 
 function renderSwitchesMission(mission) {
   const panel = document.createElement("div");
   panel.className = "switch-panel";
-
   const switches = document.createElement("div");
   switches.className = "switch-list";
 
@@ -650,15 +885,11 @@ function renderSwitchesMission(mission) {
     const button = document.createElement("button");
     button.type = "button";
     button.className = `switch-control ${gameState.switchStates[item.id] ? "on" : ""}`;
-    button.dataset.switchId = item.id;
     button.innerHTML = `<span class="switch-track"><span class="switch-thumb"></span></span><strong>${item.label}</strong>`;
     button.addEventListener("click", () => {
-      if (gameState.answers[gameState.currentMissionIndex]) {
-        return;
-      }
+      if (gameState.answers[gameState.currentMissionIndex]) return;
       gameState.switchStates[item.id] = !gameState.switchStates[item.id];
       renderSwitchesMission(mission);
-      syncShieldGlow();
       playSound("click");
     });
     switches.append(button);
@@ -675,33 +906,19 @@ function renderSwitchesMission(mission) {
       button.disabled = true;
       button.classList.add("is-locked");
     });
-    syncShieldGlow();
   });
 
   panel.append(switches, confirmButton);
   ui.interactionArea.replaceChildren(panel);
-  syncShieldGlow();
-}
-
-function syncShieldGlow() {
-  const shield = ui.roomScene.querySelector(".shield-core");
-  if (!shield) {
-    return;
-  }
-  const active = Object.values(gameState.switchStates).filter(Boolean).length >= 2;
-  shield.classList.toggle("active", active);
 }
 
 function renderTerminalChoiceMission(mission) {
   const panel = document.createElement("div");
   panel.className = "terminal-panel";
-
   const code = document.createElement("pre");
   code.textContent = mission.codeBlock;
-
   const question = document.createElement("p");
   question.textContent = mission.question;
-
   const buttons = document.createElement("div");
   buttons.className = "terminal-buttons";
 
@@ -722,32 +939,6 @@ function renderTerminalChoiceMission(mission) {
   ui.interactionArea.replaceChildren(panel);
 }
 
-function getDeviceIcon(item) {
-  const icons = {
-    Компютър: "▣",
-    Рутер: "⌁",
-    Сървър: "▤",
-    Интернет: "◎"
-  };
-  return icons[item] || "●";
-}
-
-function lockChoiceButtons(selector, selectedValue, correctValue) {
-  Array.from(ui.interactionArea.querySelectorAll(selector)).forEach((button) => {
-    const value = button.dataset.value;
-    button.disabled = true;
-    button.classList.add("is-locked");
-
-    if (value === correctValue) {
-      button.classList.add("is-correct");
-    }
-
-    if (value === selectedValue && value !== correctValue) {
-      button.classList.add("is-incorrect");
-    }
-  });
-}
-
 function handleMissionResult(isCorrect, selectedData) {
   if (gameState.answers[gameState.currentMissionIndex]) {
     return;
@@ -755,7 +946,6 @@ function handleMissionResult(isCorrect, selectedData) {
 
   const mission = missions[gameState.currentMissionIndex];
   const earnedPoints = isCorrect ? 100 : 20;
-
   gameState.score += earnedPoints;
   gameState.answers[gameState.currentMissionIndex] = {
     type: mission.type,
@@ -763,132 +953,146 @@ function handleMissionResult(isCorrect, selectedData) {
     earnedPoints,
     ...selectedData
   };
-
-  ui.roomScene.classList.toggle("scene-success", isCorrect);
-  ui.roomScene.classList.toggle("scene-warning", !isCorrect);
+  mapState.completedMissions.push(gameState.currentMissionIndex);
+  mapState.activeMissionIndex = Math.min(missions.length - 1, mapState.activeMissionIndex + 1);
+  gameState.currentMissionIndex = mapState.activeMissionIndex;
   showFeedback(isCorrect, earnedPoints, isCorrect ? mission.correctExplanation : mission.wrongExplanation, mission.note);
-  ui.nextMissionBtn.textContent =
-    gameState.currentMissionIndex === missions.length - 1 ? "Виж резултата" : "Следваща стая";
-  ui.nextMissionBtn.hidden = false;
-  updateGameHeader();
-  updateMissionMap();
+  ui.continueMapBtn.hidden = false;
+  updateDoorVisuals();
+  updateHud();
+  renderRoute();
   playSound(isCorrect ? "correct" : "wrong");
 }
 
 function showFeedback(isCorrect, earnedPoints, explanation, note) {
   ui.feedbackPanel.hidden = false;
   ui.feedbackPanel.className = `feedback-panel ${isCorrect ? "correct" : "incorrect"}`;
-  ui.feedbackBadge.textContent = isCorrect
-    ? `Успех! +${earnedPoints} точки`
-    : `Продължавай смело! +${earnedPoints} точки за участие`;
+  ui.feedbackBadge.textContent = isCorrect ? `Успех! +${earnedPoints} точки` : `Продължавай смело! +${earnedPoints} точки за участие`;
   ui.feedbackText.textContent = explanation;
   ui.feedbackNote.textContent = note;
 }
 
-function goToNextMission() {
-  playSound("click");
+function lockChoiceButtons(selector, selectedValue, correctValue) {
+  Array.from(ui.interactionArea.querySelectorAll(selector)).forEach((button) => {
+    const value = button.dataset.value;
+    button.disabled = true;
+    button.classList.add("is-locked");
+    if (value === correctValue) button.classList.add("is-correct");
+    if (value === selectedValue && value !== correctValue) button.classList.add("is-incorrect");
+  });
+}
 
-  if (gameState.currentMissionIndex >= missions.length - 1) {
-    finishGame();
-    return;
+function updateDoorVisuals() {
+  doors.forEach((door) => {
+    const element = ui.mapLayers?.querySelector(`[data-id="${door.id}"]`);
+    if (!element) return;
+    const unlocked = isDoorUnlocked(door);
+    element.classList.toggle("locked", !unlocked);
+    element.classList.toggle("unlocked", unlocked);
+  });
+
+  interactables.forEach((item) => {
+    const element = ui.mapLayers?.querySelector(`[data-id="${item.id}"]`);
+    if (!element) return;
+    element.classList.toggle("current-objective", item.missionIndex === mapState.activeMissionIndex);
+    element.classList.toggle("completed-objective", mapState.completedMissions.includes(item.missionIndex));
+  });
+}
+
+function isDoorUnlocked(door) {
+  return mapState.completedMissions.includes(door.requiredMission);
+}
+
+function renderMapState() {
+  ui.playerAvatar.style.left = `${mapState.player.x}px`;
+  ui.playerAvatar.style.top = `${mapState.player.y}px`;
+
+  hazards.forEach((hazard) => {
+    const element = ui.mapLayers.querySelector(`[data-id="${hazard.id}"]`);
+    if (element) {
+      element.style.left = `${hazard.x}px`;
+      element.style.top = `${hazard.y}px`;
+    }
+  });
+
+  collectibles.forEach((item) => {
+    const element = ui.mapLayers.querySelector(`[data-id="${item.id}"]`);
+    if (element) {
+      element.hidden = item.collected;
+    }
+  });
+
+  securityDoors.forEach((door) => {
+    const element = ui.mapLayers.querySelector(`[data-id="${door.id}"]`);
+    if (element) {
+      element.classList.toggle("completed-objective", door.correct && mapState.doorBonusDone);
+    }
+  });
+
+  const target = interactables[mapState.activeMissionIndex];
+  if (target) {
+    ui.objectiveMarker.hidden = false;
+    ui.objectiveMarker.style.left = `${target.x + target.w / 2}px`;
+    ui.objectiveMarker.style.top = `${target.y - 22}px`;
+  } else {
+    ui.objectiveMarker.hidden = true;
   }
 
-  const nextMission = missions[gameState.currentMissionIndex + 1];
-  showRoomTransition(nextMission).then(() => {
-    gameState.currentMissionIndex += 1;
-    renderMission();
-  });
+  updateDoorVisuals();
 }
 
-function showRoomTransition(nextMission) {
-  ui.transitionTitle.textContent = "Вратата се отключва…";
-  ui.transitionRoom.textContent = `Следваща зона: ${nextMission.room}`;
-  ui.transitionOverlay.hidden = false;
-  ui.transitionOverlay.classList.add("active");
-  playSound("unlock");
-
-  return new Promise((resolve) => {
-    window.setTimeout(() => {
-      ui.transitionOverlay.classList.remove("active");
-      ui.transitionOverlay.hidden = true;
-      resolve();
-    }, 950);
+function renderRoute() {
+  const fragment = document.createDocumentFragment();
+  missions.forEach((mission, index) => {
+    const item = document.createElement("span");
+    item.className = "route-step";
+    if (mapState.completedMissions.includes(index)) item.classList.add("completed");
+    else if (index === mapState.activeMissionIndex) item.classList.add("current");
+    else item.classList.add("locked");
+    item.textContent = mission.room.replace("на зала", "").replace(" коридор", "");
+    fragment.append(item);
   });
+  ui.route.replaceChildren(fragment);
 }
 
-function updateGameHeader() {
-  const mission = missions[gameState.currentMissionIndex];
+function updateHud() {
+  const completedCount = mapState.completedMissions.length;
+  const mission = missions[Math.min(mapState.activeMissionIndex, missions.length - 1)];
   ui.playerStatus.textContent = gameState.playerName || "-";
-  ui.roomStatus.textContent = mission?.room || "-";
-  ui.missionCounter.textContent = `Мисия ${gameState.currentMissionIndex + 1} от ${missions.length}`;
+  ui.roomStatus.textContent = mapState.currentZone;
   ui.scoreCounter.textContent = String(gameState.score);
   ui.timerCounter.textContent = formatTime(getElapsedSeconds());
-  ui.progressFill.style.width = `${((gameState.currentMissionIndex + 1) / missions.length) * 100}%`;
+  ui.keyCounter.textContent = `${mapState.collectedKeys}/3`;
+  ui.missionCounter.textContent = `${completedCount}/${missions.length}`;
+  ui.objectiveText.textContent = completedCount >= missions.length ? "Защитата е активирана." : mission.objective;
 }
 
-function startTimer() {
-  stopTimer();
-  ui.timerCounter.textContent = "00:00";
-  gameState.timerIntervalId = window.setInterval(() => {
-    ui.timerCounter.textContent = formatTime(getElapsedSeconds());
-  }, 250);
+function setMapMessage(text) {
+  if (ui.mapMessage.textContent === text) {
+    return;
+  }
+  setMessage(ui.mapMessage, text, text.includes("заключена") ? "error" : "helper");
 }
 
-function stopTimer() {
-  if (gameState.timerIntervalId) {
-    window.clearInterval(gameState.timerIntervalId);
-    gameState.timerIntervalId = null;
-  }
-}
-
-function getElapsedSeconds() {
-  if (!gameState.startTime) {
-    return 0;
-  }
-  const endTime = gameState.endTime || Date.now();
-  return Math.max(0, (endTime - gameState.startTime) / 1000);
-}
-
-function formatTime(seconds) {
-  const totalSeconds = Math.max(0, Math.floor(seconds));
-  const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
-  const remainingSeconds = String(totalSeconds % 60).padStart(2, "0");
-  return `${minutes}:${remainingSeconds}`;
-}
-
-function calculateTimeBonus(timeSeconds) {
-  if (timeSeconds < 45) {
-    return 50;
-  }
-  if (timeSeconds <= 70) {
-    return 30;
-  }
-  if (timeSeconds <= 90) {
-    return 10;
-  }
-  return 0;
-}
-
-function calculateTitle(score) {
-  if (score <= 150) {
-    return allowedTitles[0];
-  }
-  if (score <= 300) {
-    return allowedTitles[1];
-  }
-  if (score <= 450) {
-    return allowedTitles[2];
-  }
-  return allowedTitles[3];
+function showToast(text, type = "helper") {
+  const toast = document.createElement("div");
+  toast.className = `toast-message ${type}`;
+  toast.textContent = text;
+  ui.toastArea.append(toast);
+  window.setTimeout(() => toast.remove(), 2200);
 }
 
 function finishGame() {
+  if (mapState.isGameOver) {
+    return;
+  }
+
+  mapState.isGameOver = true;
   stopTimer();
   gameState.endTime = Date.now();
-
   const timeSeconds = Number(Math.max(0.1, getElapsedSeconds()).toFixed(2));
   const timeBonus = calculateTimeBonus(timeSeconds);
-  const finalScore = gameState.score + timeBonus;
+  const finalScore = Math.min(600, gameState.score + timeBonus);
   const title = calculateTitle(finalScore);
 
   gameState.finalResult = {
@@ -896,7 +1100,9 @@ function finishGame() {
     score: finalScore,
     timeSeconds,
     title,
-    timeBonus
+    timeBonus,
+    keys: mapState.collectedKeys,
+    missions: mapState.completedMissions.length
   };
 
   renderResult();
@@ -906,11 +1112,23 @@ function finishGame() {
   saveScore();
 }
 
+function calculateTimeBonus(timeSeconds) {
+  if (timeSeconds < 90) return 50;
+  if (timeSeconds <= 150) return 30;
+  if (timeSeconds <= 210) return 10;
+  return 0;
+}
+
+function calculateTitle(score) {
+  if (score <= 180) return allowedTitles[0];
+  if (score <= 350) return allowedTitles[1];
+  if (score <= 500) return allowedTitles[2];
+  return allowedTitles[3];
+}
+
 function renderResult() {
   const result = gameState.finalResult;
-  if (!result) {
-    return;
-  }
+  if (!result) return;
 
   ui.finalBadge.className = `final-badge ${titleBadgeClasses[result.title] || "badge-blue"}`;
   ui.finalBadge.textContent = result.title;
@@ -919,6 +1137,8 @@ function renderResult() {
     { label: "Име", value: result.name },
     { label: "Точки", value: String(result.score) },
     { label: "Време", value: formatTime(result.timeSeconds) },
+    { label: "Събрани ключове", value: `${result.keys}/3` },
+    { label: "Изпълнени мисии", value: `${result.missions}/5` },
     { label: "Бонус за време", value: `+${result.timeBonus}` },
     { label: "Титла", value: result.title }
   ];
@@ -927,27 +1147,20 @@ function renderResult() {
   items.forEach((item) => {
     const card = document.createElement("div");
     card.className = "summary-item";
-
     const label = document.createElement("span");
     label.className = "summary-item__label";
     label.textContent = item.label;
-
     const value = document.createElement("span");
     value.className = "summary-item__value";
     value.textContent = sanitizeDisplayText(item.value);
-
     card.append(label, value);
     fragment.append(card);
   });
-
   ui.resultSummary.replaceChildren(fragment);
 }
 
 async function saveScore() {
-  if (!gameState.finalResult || gameState.hasSavedResult) {
-    return;
-  }
-
+  if (!gameState.finalResult || gameState.hasSavedResult) return;
   setMessage(ui.saveStatus, "Записване на резултата...", "helper");
 
   try {
@@ -962,11 +1175,7 @@ async function saveScore() {
       })
     });
     const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || "Резултатът не беше записан. Моля, опитайте отново.");
-    }
-
+    if (!response.ok) throw new Error(data.error || "Резултатът не беше записан. Моля, опитайте отново.");
     gameState.hasSavedResult = true;
     setMessage(ui.saveStatus, "Резултатът беше записан успешно.", "success");
   } catch (error) {
@@ -980,11 +1189,7 @@ async function loadLeaderboard() {
   try {
     const response = await fetch("/api/scores", { cache: "no-store" });
     const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || "Класацията не може да бъде заредена в момента.");
-    }
-
+    if (!response.ok) throw new Error(data.error || "Класацията не може да бъде заредена в момента.");
     gameState.leaderboard = sortScores(Array.isArray(data.scores) ? data.scores : []);
     renderLeaderboard();
     setMessage(ui.leaderboardMessage, "");
@@ -997,19 +1202,14 @@ async function loadLeaderboard() {
 
 function sortScores(scores) {
   return [...scores].sort((first, second) => {
-    if (second.score !== first.score) {
-      return second.score - first.score;
-    }
-    if (first.time_seconds !== second.time_seconds) {
-      return first.time_seconds - second.time_seconds;
-    }
+    if (second.score !== first.score) return second.score - first.score;
+    if (first.time_seconds !== second.time_seconds) return first.time_seconds - second.time_seconds;
     return new Date(second.created_at).getTime() - new Date(first.created_at).getTime();
   });
 }
 
 function renderLeaderboard() {
   ui.leaderboardBody.replaceChildren();
-
   if (gameState.leaderboard.length === 0) {
     ui.leaderboardEmpty.hidden = false;
     ui.leaderboardTableWrapper.hidden = true;
@@ -1018,27 +1218,20 @@ function renderLeaderboard() {
 
   ui.leaderboardEmpty.hidden = true;
   ui.leaderboardTableWrapper.hidden = false;
-
   const fragment = document.createDocumentFragment();
   gameState.leaderboard.forEach((entry, index) => {
     const row = document.createElement("tr");
-    if (index < 3) {
-      row.classList.add(`place-${index + 1}`);
-    }
-
-    const cells = [
+    if (index < 3) row.classList.add(`place-${index + 1}`);
+    [
       createRankCell(index + 1),
       createTextCell(sanitizeDisplayText(entry.name)),
       createTextCell(String(entry.score)),
       createTextCell(formatTime(Number(entry.time_seconds))),
       createTextCell(sanitizeDisplayText(entry.title)),
       createTextCell(formatDate(entry.created_at))
-    ];
-
-    cells.forEach((cell) => row.append(cell));
+    ].forEach((cell) => row.append(cell));
     fragment.append(row);
   });
-
   ui.leaderboardBody.replaceChildren(fragment);
 }
 
@@ -1048,14 +1241,12 @@ function createRankCell(rank) {
   wrapper.className = `rank-badge rank-${rank <= 3 ? rank : "normal"}`;
   wrapper.textContent = String(rank);
   cell.append(wrapper);
-
   if (rank <= 3) {
     const label = document.createElement("span");
     label.className = "top-rank-label";
     label.textContent = topLabels[rank - 1];
     cell.append(label);
   }
-
   return cell;
 }
 
@@ -1067,39 +1258,21 @@ function createTextCell(text) {
 
 function formatDate(value) {
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return "Непозната дата";
-  }
-
-  return date.toLocaleString("bg-BG", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit"
-  });
+  if (Number.isNaN(date.getTime())) return "Непозната дата";
+  return date.toLocaleString("bg-BG", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
 }
 
 function requestAdminClear() {
   playSound("click");
   const adminCode = window.prompt("Въведете администраторския код:");
-
-  if (adminCode === null) {
-    return;
-  }
-
+  if (adminCode === null) return;
   const normalizedAdminCode = adminCode.trim();
   if (!normalizedAdminCode) {
     setMessage(ui.leaderboardMessage, "Моля, въведете администраторски код.", "error");
     return;
   }
-
   const confirmed = window.confirm("Сигурни ли сте, че искате да изчистите класацията?");
-  if (!confirmed) {
-    return;
-  }
-
-  clearLeaderboard(normalizedAdminCode);
+  if (confirmed) clearLeaderboard(normalizedAdminCode);
 }
 
 async function clearLeaderboard(adminCode) {
@@ -1112,11 +1285,7 @@ async function clearLeaderboard(adminCode) {
       body: JSON.stringify({ adminCode })
     });
     const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || "Класацията не може да бъде изчистена в момента.");
-    }
-
+    if (!response.ok) throw new Error(data.error || "Класацията не може да бъде изчистена в момента.");
     await loadLeaderboard();
     setMessage(ui.leaderboardMessage, "Класацията беше изчистена успешно.", "success");
   } catch (error) {
@@ -1136,13 +1305,62 @@ function setMessage(element, text, type = "") {
   element.className = type ? `message ${type}` : "message";
 }
 
+function startTimer() {
+  stopTimer();
+  ui.timerCounter.textContent = "00:00";
+  gameState.timerIntervalId = window.setInterval(updateHud, 250);
+}
+
+function stopTimer() {
+  if (gameState.timerIntervalId) {
+    window.clearInterval(gameState.timerIntervalId);
+    gameState.timerIntervalId = null;
+  }
+}
+
+function getElapsedSeconds() {
+  if (!gameState.startTime) return 0;
+  const endTime = gameState.endTime || Date.now();
+  return Math.max(0, (endTime - gameState.startTime) / 1000);
+}
+
+function formatTime(seconds) {
+  const totalSeconds = Math.max(0, Math.floor(seconds));
+  const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
+  const remainingSeconds = String(totalSeconds % 60).padStart(2, "0");
+  return `${minutes}:${remainingSeconds}`;
+}
+
+function rectsOverlap(a, b) {
+  const aw = a.w ?? a.width;
+  const ah = a.h ?? a.height;
+  const bw = b.w ?? b.width;
+  const bh = b.h ?? b.height;
+  return a.x < b.x + bw && a.x + aw > b.x && a.y < b.y + bh && a.y + ah > b.y;
+}
+
+function inflateRect(rect, amount) {
+  return { x: rect.x - amount, y: rect.y - amount, w: rect.w + amount * 2, h: rect.h + amount * 2 };
+}
+
+function getPlayerRect() {
+  return { x: mapState.player.x, y: mapState.player.y, w: mapState.player.width, h: mapState.player.height };
+}
+
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function getDeviceIcon(item) {
+  const icons = { Компютър: "▣", Рутер: "⌁", Сървър: "▤", Интернет: "◎" };
+  return icons[item] || "●";
+}
+
 function toggleSound() {
   gameState.soundEnabled = !gameState.soundEnabled;
   savePreferences();
   updateSoundButton();
-  if (gameState.soundEnabled) {
-    playSound("click");
-  }
+  if (gameState.soundEnabled) playSound("click");
 }
 
 function updateSoundButton() {
@@ -1152,9 +1370,7 @@ function updateSoundButton() {
 function loadPreferences() {
   try {
     const storedPreference = window.localStorage.getItem("it-quest-sound-enabled");
-    if (storedPreference !== null) {
-      gameState.soundEnabled = storedPreference === "true";
-    }
+    if (storedPreference !== null) gameState.soundEnabled = storedPreference === "true";
   } catch (error) {
     gameState.soundEnabled = true;
   }
@@ -1170,40 +1386,25 @@ function savePreferences() {
 
 function ensureAudioContext() {
   const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-  if (!AudioContextClass) {
-    return null;
-  }
-
-  if (!audioContext) {
-    audioContext = new AudioContextClass();
-  }
-
-  if (audioContext.state === "suspended") {
-    audioContext.resume();
-  }
-
+  if (!AudioContextClass) return null;
+  if (!audioContext) audioContext = new AudioContextClass();
+  if (audioContext.state === "suspended") audioContext.resume();
   return audioContext;
 }
 
 function playTone({ frequency, duration, type = "sine", delay = 0, endFrequency = frequency, volume = 0.05 }) {
   const context = ensureAudioContext();
-  if (!context) {
-    return;
-  }
-
+  if (!context) return;
   const oscillator = context.createOscillator();
   const gain = context.createGain();
   const startTime = context.currentTime + delay;
   const endTime = startTime + duration;
-
   oscillator.type = type;
   oscillator.frequency.setValueAtTime(frequency, startTime);
   oscillator.frequency.linearRampToValueAtTime(endFrequency, endTime);
-
   gain.gain.setValueAtTime(0.0001, startTime);
   gain.gain.linearRampToValueAtTime(volume, startTime + 0.02);
   gain.gain.exponentialRampToValueAtTime(0.0001, endTime);
-
   oscillator.connect(gain);
   gain.connect(context.destination);
   oscillator.start(startTime);
@@ -1211,32 +1412,17 @@ function playTone({ frequency, duration, type = "sine", delay = 0, endFrequency 
 }
 
 function playSound(kind) {
-  if (!gameState.soundEnabled) {
-    return;
-  }
-
-  if (kind === "click") {
-    playTone({ frequency: 560, endFrequency: 620, duration: 0.08, type: "triangle", volume: 0.03 });
-    return;
-  }
-
+  if (!gameState.soundEnabled) return;
+  if (kind === "click") playTone({ frequency: 560, endFrequency: 620, duration: 0.08, type: "triangle", volume: 0.03 });
   if (kind === "unlock") {
     playTone({ frequency: 240, endFrequency: 520, duration: 0.18, type: "sine", volume: 0.04 });
     playTone({ frequency: 620, endFrequency: 760, duration: 0.12, type: "triangle", delay: 0.16, volume: 0.035 });
-    return;
   }
-
   if (kind === "correct") {
     playTone({ frequency: 520, endFrequency: 620, duration: 0.12, type: "triangle", volume: 0.04 });
     playTone({ frequency: 700, endFrequency: 820, duration: 0.16, type: "triangle", delay: 0.09, volume: 0.04 });
-    return;
   }
-
-  if (kind === "wrong") {
-    playTone({ frequency: 320, endFrequency: 200, duration: 0.18, type: "sawtooth", volume: 0.035 });
-    return;
-  }
-
+  if (kind === "wrong") playTone({ frequency: 320, endFrequency: 200, duration: 0.18, type: "sawtooth", volume: 0.035 });
   if (kind === "success") {
     playTone({ frequency: 523, duration: 0.14, type: "triangle", volume: 0.04 });
     playTone({ frequency: 659, duration: 0.14, type: "triangle", delay: 0.12, volume: 0.04 });
@@ -1247,7 +1433,6 @@ function playSound(kind) {
 function launchConfetti() {
   clearConfetti();
   const colors = ["#2fb8ff", "#5df7c5", "#9c7bff", "#ffc96c", "#ff6ca8"];
-
   for (let index = 0; index < 28; index += 1) {
     const piece = document.createElement("span");
     piece.className = "confetti-piece";
@@ -1257,7 +1442,6 @@ function launchConfetti() {
     piece.style.animationDelay = `${Math.random() * 0.45}s`;
     ui.confettiLayer.append(piece);
   }
-
   window.setTimeout(clearConfetti, 3200);
 }
 
@@ -1268,13 +1452,11 @@ function clearConfetti() {
 async function toggleEventMode() {
   playSound("click");
   const fullscreenActive = Boolean(document.fullscreenElement);
-
   try {
     if (!fullscreenActive && document.documentElement.requestFullscreen) {
       await document.documentElement.requestFullscreen();
       return;
     }
-
     if (fullscreenActive && document.exitFullscreen) {
       await document.exitFullscreen();
       return;
@@ -1284,16 +1466,12 @@ async function toggleEventMode() {
     syncEventModeState();
     return;
   }
-
   ui.body.classList.toggle("event-mode");
   syncEventModeState();
 }
 
 function syncEventModeState() {
-  if (!ui.body || !ui.eventModeBtn) {
-    return;
-  }
-
+  if (!ui.body || !ui.eventModeBtn) return;
   const isActive = Boolean(document.fullscreenElement) || ui.body.classList.contains("event-mode");
   ui.body.classList.toggle("event-mode", isActive);
   ui.eventModeBtn.textContent = isActive ? "Изход от режим за събитие" : "Режим за събитие";

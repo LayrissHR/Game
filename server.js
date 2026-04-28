@@ -49,8 +49,8 @@ function validateScorePayload(payload) {
     return { error: "Точките трябва да бъдат валидно число." };
   }
 
-  if (score < 0 || score > 550) {
-    return { error: "Точките трябва да бъдат между 0 и 550." };
+  if (score < 0 || score > 600) {
+    return { error: "Точките трябва да бъдат между 0 и 600." };
   }
 
   if (!Number.isFinite(timeSeconds) || timeSeconds <= 0) {
