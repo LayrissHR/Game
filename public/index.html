@@ -8,9 +8,6 @@
   </head>
   <body>
     <div class="background-grid" aria-hidden="true"></div>
-    <div class="background-orb orb-one" aria-hidden="true"></div>
-    <div class="background-orb orb-two" aria-hidden="true"></div>
-    <div class="background-orb orb-three" aria-hidden="true"></div>
 
     <div class="app-shell" id="app-shell">
       <header class="utility-bar">
@@ -25,11 +22,10 @@
         <section id="screen-home" class="screen active" aria-labelledby="home-title">
           <div class="hero-layout">
             <article class="glass-panel hero-copy">
-              <p class="eyebrow">Мисия за бъдещи IT герои</p>
+              <p class="eyebrow">Защити сървърната стая</p>
               <h1 id="home-title" class="home-title">IT Quest: Мисия Академия</h1>
-              <p class="home-subtitle">Влез в ролята на млад IT герой и премини през 5 мисии!</p>
-              <p class="home-description">
-                Отговори на кратки въпроси, събери точки и виж дали ще станеш „Бъдещ IT специалист“.
+              <p class="home-subtitle">
+                Дигиталната академия е под кибер тревога. Премини през 5 стаи и активирай защитата на училищния сървър.
               </p>
 
               <div class="name-panel">
@@ -46,43 +42,27 @@
               </div>
 
               <div class="home-actions">
-                <button id="start-btn" class="button button-primary" type="button">Старт на мисията</button>
+                <button id="start-btn" class="button button-primary" type="button">Влез в академията</button>
                 <button id="home-leaderboard-btn" class="button button-secondary" type="button">Виж класацията</button>
               </div>
 
-              <p class="promo-note">
-                Създадено за бъдещите програмисти, дизайнери, инженери и IT специалисти.
-              </p>
+              <p class="promo-note">Бърза 1–2 минутна мисия за бъдещи програмисти, дизайнери и IT специалисти.</p>
             </article>
 
             <aside class="glass-panel hero-visual" aria-hidden="true">
-              <div class="academy-bot">
-                <div class="academy-bot__antenna"></div>
-                <div class="academy-bot__head">
-                  <span class="academy-bot__eye"></span>
-                  <span class="academy-bot__eye"></span>
+              <div class="academy-door-preview">
+                <div class="door-panel">
+                  <span class="door-light"></span>
+                  <span class="door-lock">⌁</span>
                 </div>
-                <div class="academy-bot__body"></div>
-                <div class="academy-bot__arm academy-bot__arm--left"></div>
-                <div class="academy-bot__arm academy-bot__arm--right"></div>
-                <div class="academy-bot__spark academy-bot__spark--one"></div>
-                <div class="academy-bot__spark academy-bot__spark--two"></div>
-                <div class="academy-bot__spark academy-bot__spark--three"></div>
+                <div class="preview-server">
+                  <span></span><span></span><span></span>
+                </div>
               </div>
-
               <div class="feature-cards">
-                <article class="mini-card">
-                  <span class="mini-card__value">5</span>
-                  <span class="mini-card__label">мисии</span>
-                </article>
-                <article class="mini-card">
-                  <span class="mini-card__value">550</span>
-                  <span class="mini-card__label">макс. точки</span>
-                </article>
-                <article class="mini-card">
-                  <span class="mini-card__value">1–2</span>
-                  <span class="mini-card__label">минути игра</span>
-                </article>
+                <article class="mini-card"><span class="mini-card__value">5</span><span class="mini-card__label">стаи</span></article>
+                <article class="mini-card"><span class="mini-card__value">550</span><span class="mini-card__label">макс. точки</span></article>
+                <article class="mini-card"><span class="mini-card__value">1–2</span><span class="mini-card__label">минути</span></article>
               </div>
             </aside>
           </div>
@@ -92,18 +72,24 @@
           <div class="glass-panel game-shell">
             <div class="status-row">
               <article class="status-chip">
-                <span class="status-chip__label">Напредък</span>
-                <strong id="mission-counter" class="status-chip__value">Мисия 1 от 5</strong>
+                <span class="status-chip__label">Играч</span>
+                <strong id="player-status" class="status-chip__value">-</strong>
+              </article>
+              <article class="status-chip">
+                <span class="status-chip__label">Текуща стая</span>
+                <strong id="room-status" class="status-chip__value">Входна зала</strong>
               </article>
               <article class="status-chip">
                 <span class="status-chip__label">Точки</span>
-                <strong id="score-counter" class="status-chip__value">Точки: 0</strong>
+                <strong id="score-counter" class="status-chip__value">0</strong>
               </article>
               <article class="status-chip">
                 <span class="status-chip__label">Време</span>
-                <strong id="timer-counter" class="status-chip__value">Време: 00:00</strong>
+                <strong id="timer-counter" class="status-chip__value">00:00</strong>
               </article>
             </div>
+
+            <div id="mission-map" class="mission-map" aria-label="Маршрут през Кибер академията"></div>
 
             <div class="progress-track" aria-hidden="true">
               <div id="progress-fill" class="progress-fill"></div>
@@ -111,30 +97,13 @@
 
             <article class="mission-panel">
               <div class="mission-heading">
-                <p class="eyebrow">Текущо предизвикателство</p>
+                <p id="mission-counter" class="eyebrow">Мисия 1 от 5</p>
                 <h2 id="mission-title" class="mission-title">Мисия</h2>
               </div>
 
-              <p id="mission-question" class="mission-question"></p>
-              <pre id="mission-code" class="mission-code" hidden></pre>
-
-              <div id="order-builder" class="order-builder" hidden>
-                <div>
-                  <p class="order-heading">Избери реда с три клика:</p>
-                  <div id="order-slots" class="order-slots"></div>
-                </div>
-
-                <div id="order-options" class="order-options"></div>
-
-                <div class="order-actions">
-                  <button id="order-reset-btn" class="button button-secondary" type="button">Изчисти избора</button>
-                  <button id="order-confirm-btn" class="button button-primary" type="button">Потвърди</button>
-                </div>
-
-                <p id="order-status" class="message helper" aria-live="polite"></p>
-              </div>
-
-              <div id="answer-options" class="answer-options"></div>
+              <p id="mission-story" class="mission-question"></p>
+              <div id="room-scene" class="room-scene" aria-hidden="true"></div>
+              <div id="interaction-area" class="interaction-area"></div>
 
               <div id="feedback-panel" class="feedback-panel" hidden aria-live="polite">
                 <p id="feedback-badge" class="feedback-badge"></p>
@@ -143,7 +112,7 @@
               </div>
 
               <div class="mission-footer">
-                <button id="next-mission-btn" class="button button-primary" type="button" hidden>Следваща мисия</button>
+                <button id="next-mission-btn" class="button button-primary" type="button" hidden>Следваща стая</button>
               </div>
             </article>
           </div>
@@ -154,10 +123,11 @@
             <article class="glass-panel summary-card">
               <div id="confetti-layer" class="confetti-layer" aria-hidden="true"></div>
               <p class="eyebrow">Финален доклад</p>
-              <h2 id="result-title" class="mission-title">Мисията е завършена!</h2>
+              <h2 id="result-title" class="mission-title">Сървърната стая е защитена!</h2>
+              <div id="final-badge" class="final-badge"></div>
               <div id="result-summary" class="summary-grid"></div>
               <p class="result-message">
-                Искаш ли и ти да създаваш игри, сайтове, роботи и приложения? Това се учи при нас!
+                Ти премина през всички зони на Кибер академията и помогна за защитата на училищния сървър.
               </p>
               <p id="save-status" class="message" aria-live="polite"></p>
             </article>
@@ -187,9 +157,9 @@
           <div class="glass-panel leaderboard-layout">
             <div class="leaderboard-header">
               <div>
-                <p class="eyebrow">Дневна надпревара</p>
-                <h2 id="leaderboard-title" class="mission-title">Класация</h2>
-                <p class="leaderboard-subtitle">Топ IT герои на деня</p>
+                <p class="eyebrow">Класация</p>
+                <h2 id="leaderboard-title" class="mission-title">Топ защитници</h2>
+                <p class="leaderboard-subtitle">Топ защитници на сървърната стая</p>
               </div>
 
               <div class="leaderboard-actions">
@@ -202,7 +172,7 @@
             <p id="leaderboard-message" class="message" aria-live="polite"></p>
 
             <div id="leaderboard-empty" class="empty-state" hidden>
-              Все още няма резултати. Бъди първият IT герой!
+              Все още няма резултати. Бъди първият защитник на сървърната стая!
             </div>
 
             <div id="leaderboard-table-wrapper" class="table-shell" hidden>
@@ -229,10 +199,16 @@
       </main>
     </div>
 
-    <noscript>
-      <div class="noscript-box">
-        За да работи играта, трябва да включите JavaScript в браузъра.
+    <div id="transition-overlay" class="transition-overlay" hidden>
+      <div class="transition-card">
+        <span class="transition-scan"></span>
+        <strong id="transition-title">Достъпът е разрешен…</strong>
+        <span id="transition-room">Следваща зона</span>
       </div>
+    </div>
+
+    <noscript>
+      <div class="noscript-box">За да работи играта, трябва да включите JavaScript в браузъра.</div>
     </noscript>
 
     <script src="/app.js" defer></script>

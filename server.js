@@ -72,11 +72,13 @@ function validateScorePayload(payload) {
 }
 
 app.disable("x-powered-by");
+
 app.use((request, response, next) => {
   response.setHeader("Cache-Control", "no-store");
   response.setHeader("X-Content-Type-Options", "nosniff");
   next();
 });
+
 app.use(express.json({ limit: "10kb" }));
 app.use(express.static(publicDirectory, { index: false }));
 
