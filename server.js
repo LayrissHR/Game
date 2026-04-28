@@ -11,6 +11,10 @@ const {
 const app = express();
 const PORT = process.env.PORT || 3000;
 const ADMIN_CODE = process.env.ADMIN_CODE || "academy2026";
+const HOST = "0.0.0.0";
+const SCORE_CONFIG = {
+  maxScore: 760
+};
 const publicDirectory = path.join(__dirname, "public");
 
 const allowedTitles = new Set([
@@ -49,8 +53,8 @@ function validateScorePayload(payload) {
     return { error: "Точките трябва да бъдат валидно число." };
   }
 
-  if (score < 0 || score > 600) {
-    return { error: "Точките трябва да бъдат между 0 и 600." };
+  if (score < 0 || score > SCORE_CONFIG.maxScore) {
+    return { error: `Точките трябва да бъдат между 0 и ${SCORE_CONFIG.maxScore}.` };
   }
 
   if (!Number.isFinite(timeSeconds) || timeSeconds <= 0) {
@@ -160,7 +164,7 @@ app.use((error, request, response, next) => {
 
 initDatabase()
   .then(() => {
-    app.listen(PORT, () => {
+    app.listen(PORT, HOST, () => {
       console.log(`IT Quest: Мисия Академия е стартирана на http://localhost:${PORT}`);
       console.log(`Локална база данни: ${databasePath}`);
     });

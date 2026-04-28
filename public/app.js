@@ -89,6 +89,19 @@ const titleBadgeClasses = {
 };
 
 const topLabels = ["Главен защитник", "Мрежов герой", "Кибер помощник"];
+const SCORE_CONFIG = {
+  correctMission: 100,
+  wrongMission: 20,
+  keyBonus: 10,
+  infectedFileCorrect: 50,
+  infectedFileWrong: 10,
+  powerPanelCorrect: 40,
+  powerPanelWrong: 10,
+  cablePuzzleCorrect: 50,
+  cablePuzzleWrong: 10,
+  virusPenalty: 10,
+  maxScore: 760
+};
 const mapWidth = 900;
 const mapHeight = 520;
 const controls = {
@@ -153,7 +166,9 @@ const interactables = [
 const collectibles = [
   { id: "key-1", x: 300, y: 138, w: 22, h: 22, collected: false },
   { id: "key-2", x: 615, y: 236, w: 22, h: 22, collected: false },
-  { id: "key-3", x: 452, y: 372, w: 22, h: 22, collected: false }
+  { id: "key-3", x: 452, y: 372, w: 22, h: 22, collected: false },
+  { id: "key-4", x: 808, y: 152, w: 22, h: 22, collected: false },
+  { id: "key-5", x: 814, y: 454, w: 22, h: 22, collected: false }
 ];
 
 const hazards = [
@@ -168,14 +183,53 @@ const securityDoors = [
   { id: "games-door", label: "Игри", x: 574, y: 398, w: 78, h: 34, correct: false }
 ];
 
+const bonusInteractables = [
+  {
+    id: "bonus-files",
+    type: "infected-file",
+    label: "Бонус: файлове",
+    className: "bonus-station file-station",
+    x: 430,
+    y: 104,
+    w: 58,
+    h: 58,
+    prompt: "Натисни E за бонус: почисти заразените файлове"
+  },
+  {
+    id: "bonus-power",
+    type: "power-panel",
+    label: "Бонус: енергия",
+    className: "bonus-station power-station",
+    x: 264,
+    y: 384,
+    w: 58,
+    h: 58,
+    prompt: "Натисни E за бонус: възстанови енергията"
+  },
+  {
+    id: "bonus-cables",
+    type: "cable-puzzle",
+    label: "Бонус: кабели",
+    className: "bonus-station cable-station",
+    x: 792,
+    y: 322,
+    w: 58,
+    h: 58,
+    prompt: "Натисни E за бонус: мини пъзел с кабели"
+  }
+];
+
 const gameState = {
   playerName: "",
+  screen: "home",
   currentMissionIndex: 0,
   score: 0,
   startTime: null,
   endTime: null,
   answers: [],
   selectedOrder: [],
+  selectedCable: "",
+  cablePairs: [],
   switchStates: {},
   timerIntervalId: null,
   hasSavedResult: false,
@@ -184,18 +238,28 @@ const gameState = {
   finalResult: null
 };
 
+const inputState = {
+  up: false,
+  down: false,
+  left: false,
+  right: false
+};
+
 const mapState = {
   player: { x: 76, y: 146, width: 32, height: 32, speed: 3 },
-  pressedKeys: {},
   currentZone: "Входна зала",
   activeMissionIndex: 0,
   completedMissions: [],
   collectedKeys: 0,
+  completedBonuses: [],
+  virusEscapeCompleted: false,
+  mobileControlsForced: false,
   doorBonusDone: false,
   doorMessageCooldown: false,
   virusCooldown: false,
   isMissionOpen: false,
   isGameOver: false,
+  openModalKind: "",
   nearbyInteractable: null,
   interactionCooldown: false,
   loopStarted: false
@@ -207,6 +271,9 @@ let audioContext = null;
 document.addEventListener("DOMContentLoaded", init);
 window.addEventListener("popstate", handleRouteChange);
 document.addEventListener("fullscreenchange", syncEventModeState);
+window.addEventListener("resize", () => {
+  if (ui.body) syncMobileControlsVisibility();
+});
 
 function init() {
   cacheElements();
@@ -232,6 +299,7 @@ function cacheElements() {
   ui.playerNameInput = document.getElementById("player-name");
   ui.homeError = document.getElementById("home-error");
   ui.soundToggle = document.getElementById("sound-toggle");
+  ui.mobileControlsToggle = document.getElementById("mobile-controls-toggle");
   ui.eventModeBtn = document.getElementById("event-mode-btn");
   ui.startBtn = document.getElementById("start-btn");
   ui.beginMapBtn = document.getElementById("begin-map-btn");
@@ -242,6 +310,7 @@ function cacheElements() {
   ui.scoreCounter = document.getElementById("score-counter");
   ui.timerCounter = document.getElementById("timer-counter");
   ui.keyCounter = document.getElementById("key-counter");
+  ui.bonusCounter = document.getElementById("bonus-counter");
   ui.objectiveText = document.getElementById("objective-text");
   ui.route = document.getElementById("mission-route");
   ui.mapMessage = document.getElementById("map-message");
@@ -277,6 +346,8 @@ function cacheElements() {
   ui.leaderboardHomeBtn = document.getElementById("leaderboard-home-btn");
   ui.refreshLeaderboardBtn = document.getElementById("refresh-leaderboard-btn");
   ui.adminBtn = document.getElementById("admin-btn");
+  ui.mobileControls = document.getElementById("mobile-controls");
+  ui.mobileActionBtn = document.getElementById("mobile-action-btn");
 }
 
 function bindEvents() {
@@ -292,6 +363,7 @@ function bindEvents() {
   ui.refreshLeaderboardBtn.addEventListener("click", loadLeaderboard);
   ui.adminBtn.addEventListener("click", requestAdminClear);
   ui.soundToggle.addEventListener("click", toggleSound);
+  ui.mobileControlsToggle.addEventListener("click", toggleMobileControls);
   ui.eventModeBtn.addEventListener("click", toggleEventMode);
   ui.playerNameInput.addEventListener("input", handleNameInput);
   ui.playerNameInput.addEventListener("keydown", (event) => {
@@ -302,6 +374,48 @@ function bindEvents() {
   });
   document.addEventListener("keydown", handleKeyDown);
   document.addEventListener("keyup", handleKeyUp);
+  window.addEventListener("blur", clearMovementInput);
+  bindMobileControls();
+}
+
+function bindMobileControls() {
+  Array.from(ui.mobileControls.querySelectorAll("[data-direction]")).forEach((button) => {
+    const direction = button.dataset.direction;
+    button.addEventListener("pointerdown", (event) => {
+      event.preventDefault();
+      if (canProcessGameControls()) {
+        inputState[direction] = true;
+      }
+      button.setPointerCapture?.(event.pointerId);
+    });
+    const stop = (event) => {
+      event.preventDefault();
+      inputState[direction] = false;
+    };
+    button.addEventListener("pointerup", stop);
+    button.addEventListener("pointercancel", stop);
+    button.addEventListener("pointerleave", stop);
+  });
+
+  ui.mobileActionBtn.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    if (canProcessGameControls()) {
+      tryInteraction();
+    }
+  });
+}
+
+function toggleMobileControls() {
+  mapState.mobileControlsForced = !mapState.mobileControlsForced;
+  syncMobileControlsVisibility();
+  playSound("click");
+}
+
+function syncMobileControlsVisibility() {
+  if (!ui.mobileControls || !ui.mobileControlsToggle) return;
+  const shouldShow = gameState.screen === "map" && (mapState.mobileControlsForced || window.matchMedia("(pointer: coarse)").matches);
+  ui.body.classList.toggle("show-mobile-controls", shouldShow);
+  ui.mobileControlsToggle.textContent = shouldShow ? "Скрий мобилни бутони" : "Покажи мобилни бутони";
 }
 
 function handleRouteChange() {
@@ -309,6 +423,8 @@ function handleRouteChange() {
 }
 
 function showScreen(screenName, pushState = true) {
+  clearMovementInput();
+  gameState.screen = screenName === "game" ? "map" : screenName;
   Object.entries(ui.screens).forEach(([name, element]) => {
     const isActive = name === screenName;
     element.hidden = !isActive;
@@ -329,6 +445,8 @@ function showScreen(screenName, pushState = true) {
   if (screenName === "home") {
     ui.playerNameInput.focus();
   }
+
+  syncMobileControlsVisibility();
 }
 
 function showInstructions() {
@@ -375,26 +493,31 @@ function resetGameState() {
   gameState.endTime = null;
   gameState.answers = [];
   gameState.selectedOrder = [];
+  gameState.selectedCable = "";
+  gameState.cablePairs = [];
   gameState.switchStates = {};
   gameState.hasSavedResult = false;
   gameState.finalResult = null;
   mapState.player.x = 76;
   mapState.player.y = 146;
-  mapState.pressedKeys = {};
   mapState.currentZone = "Входна зала";
   mapState.activeMissionIndex = 0;
   mapState.completedMissions = [];
   mapState.collectedKeys = 0;
+  mapState.completedBonuses = [];
+  mapState.virusEscapeCompleted = false;
   mapState.doorBonusDone = false;
   mapState.doorMessageCooldown = false;
   mapState.virusCooldown = false;
   mapState.isMissionOpen = false;
   mapState.isGameOver = false;
+  mapState.openModalKind = "";
   mapState.nearbyInteractable = null;
   mapState.interactionCooldown = false;
   collectibles.forEach((item) => {
     item.collected = false;
   });
+  clearMovementInput();
   hazards[0].x = 585;
   hazards[1].y = 170;
   hazards[2].x = 426;
@@ -435,9 +558,24 @@ function sanitizeNameInput(value) {
   return sanitizeDisplayText(value);
 }
 
+function isTypingInInput() {
+  const element = document.activeElement;
+  if (!element) return false;
+  const tag = element.tagName.toLowerCase();
+  return tag === "input" || tag === "textarea" || tag === "select" || element.isContentEditable;
+}
+
+function canProcessGameControls() {
+  return gameState.screen === "map" && !mapState.isMissionOpen && !mapState.isGameOver && !isTypingInInput();
+}
+
 function handleKeyDown(event) {
+  if (isTypingInInput() || !canProcessGameControls()) {
+    return;
+  }
+
   if (controls[event.code]) {
-    mapState.pressedKeys[controls[event.code]] = true;
+    inputState[controls[event.code]] = true;
     event.preventDefault();
   }
 
@@ -448,10 +586,21 @@ function handleKeyDown(event) {
 }
 
 function handleKeyUp(event) {
+  if (isTypingInInput() || gameState.screen !== "map") {
+    return;
+  }
+
   if (controls[event.code]) {
-    mapState.pressedKeys[controls[event.code]] = false;
+    inputState[controls[event.code]] = false;
     event.preventDefault();
   }
+}
+
+function clearMovementInput() {
+  inputState.up = false;
+  inputState.down = false;
+  inputState.left = false;
+  inputState.right = false;
 }
 
 function startGameLoop() {
@@ -504,6 +653,13 @@ function buildMap() {
     fragment.append(element);
   });
 
+  bonusInteractables.forEach((item) => {
+    const element = createMapElement(`interactable bonus-interactable ${item.className}`, item);
+    element.dataset.id = item.id;
+    element.innerHTML = `<span>★</span><strong>${item.label}</strong>`;
+    fragment.append(element);
+  });
+
   collectibles.forEach((item) => {
     const element = createMapElement("collectible-key", item);
     element.dataset.id = item.id;
@@ -548,10 +704,10 @@ function updatePlayerMovement() {
   let dx = 0;
   let dy = 0;
 
-  if (mapState.pressedKeys.left) dx -= 1;
-  if (mapState.pressedKeys.right) dx += 1;
-  if (mapState.pressedKeys.up) dy -= 1;
-  if (mapState.pressedKeys.down) dy += 1;
+  if (inputState.left) dx -= 1;
+  if (inputState.right) dx += 1;
+  if (inputState.up) dy -= 1;
+  if (inputState.down) dy += 1;
 
   if (dx === 0 && dy === 0) {
     return;
@@ -613,6 +769,14 @@ function updateHazards() {
       hazard.y = clamp(hazard.y, hazard.minY, hazard.maxY);
     }
   });
+
+  bonusInteractables.forEach((item) => {
+    const element = ui.mapLayers?.querySelector(`[data-id="${item.id}"]`);
+    if (!element) return;
+    const completed = mapState.completedBonuses.includes(item.id);
+    element.classList.toggle("current-objective", !completed);
+    element.classList.toggle("completed-objective", completed);
+  });
 }
 
 function checkCollectibles() {
@@ -621,9 +785,12 @@ function checkCollectibles() {
     if (!item.collected && rectsOverlap(playerRect, item)) {
       item.collected = true;
       mapState.collectedKeys += 1;
-      gameState.score += 10;
+      gameState.score += SCORE_CONFIG.keyBonus;
       showToast("Събран защитен ключ! +10 точки", "success");
       playSound("correct");
+      if (mapState.collectedKeys === collectibles.length) {
+        completeBonus("keys");
+      }
       updateHud();
     }
   });
@@ -643,8 +810,7 @@ function checkSecurityDoors() {
 
   if (touchedDoor.correct && !mapState.doorBonusDone) {
     mapState.doorBonusDone = true;
-    gameState.score += 20;
-    showToast("Избра правилната врата: Сигурност! +20 точки", "success");
+    showToast("Избра правилната врата: Сигурност!", "success");
     playSound("correct");
     updateHud();
     renderMapState();
@@ -668,7 +834,7 @@ function checkHazards() {
     return;
   }
 
-  gameState.score = Math.max(0, gameState.score - 10);
+  gameState.score = Math.max(0, gameState.score - SCORE_CONFIG.virusPenalty);
   mapState.virusCooldown = true;
   ui.playerAvatar.classList.add("hit");
   showToast("Докосна вирус! -10 точки", "error");
@@ -688,13 +854,19 @@ function checkCurrentZone() {
   const zone = rooms.find((room) => center.x >= room.x && center.x <= room.x + room.w && center.y >= room.y && center.y <= room.y + room.h);
   if (zone && zone.name !== mapState.currentZone) {
     mapState.currentZone = zone.name;
+    if (zone.name === "Мрежова стая") {
+      completeBonus("viruses");
+    }
     updateHud();
   }
 }
 
 function checkNearbyInteractable() {
   const playerRect = inflateRect(getPlayerRect(), 20);
-  mapState.nearbyInteractable = interactables.find((item) => rectsOverlap(playerRect, item)) || null;
+  mapState.nearbyInteractable =
+    interactables.find((item) => rectsOverlap(playerRect, item)) ||
+    bonusInteractables.find((item) => rectsOverlap(playerRect, item)) ||
+    null;
 
   if (!mapState.nearbyInteractable) {
     ui.interactionPrompt.hidden = true;
@@ -703,10 +875,18 @@ function checkNearbyInteractable() {
 
   const item = mapState.nearbyInteractable;
   ui.interactionPrompt.hidden = false;
-  ui.interactionPrompt.textContent = item.missionIndex === mapState.activeMissionIndex ? "Натисни E" : "Заключено";
+  const isBonus = Boolean(item.type);
+  const bonusDone = isBonus && mapState.completedBonuses.includes(item.id);
+  ui.interactionPrompt.textContent = isBonus
+    ? bonusDone ? "Завършено" : "Натисни E"
+    : item.missionIndex === mapState.activeMissionIndex ? "Натисни E" : "Заключено";
   ui.interactionPrompt.style.left = `${item.x + item.w / 2}px`;
   ui.interactionPrompt.style.top = `${item.y - 12}px`;
-  setMapMessage(item.missionIndex === mapState.activeMissionIndex ? item.prompt : "Тази зона все още е заключена.");
+  if (isBonus) {
+    setMapMessage(bonusDone ? "Този бонус вече е изпълнен." : item.prompt);
+  } else {
+    setMapMessage(item.missionIndex === mapState.activeMissionIndex ? item.prompt : "Тази зона все още е заключена.");
+  }
 }
 
 function tryInteraction() {
@@ -724,6 +904,15 @@ function tryInteraction() {
     mapState.interactionCooldown = false;
   }, 350);
 
+  if (item.type) {
+    if (mapState.completedBonuses.includes(item.id)) {
+      showToast("Този бонус вече е изпълнен.", "helper");
+      return;
+    }
+    openBonusModal(item);
+    return;
+  }
+
   if (item.missionIndex !== mapState.activeMissionIndex) {
     showToast("Тази зона все още е заключена.", "error");
     return;
@@ -734,7 +923,9 @@ function tryInteraction() {
 
 function openMissionModal(index) {
   const mission = missions[index];
+  clearMovementInput();
   mapState.isMissionOpen = true;
+  mapState.openModalKind = "mission";
   gameState.selectedOrder = [];
   gameState.switchStates = {};
   ui.missionKicker.textContent = `Мисия ${index + 1} от ${missions.length}`;
@@ -748,9 +939,38 @@ function openMissionModal(index) {
   playSound("click");
 }
 
+function openBonusModal(item) {
+  clearMovementInput();
+  mapState.isMissionOpen = true;
+  mapState.openModalKind = "bonus";
+  gameState.switchStates = {};
+  gameState.selectedCable = "";
+  gameState.cablePairs = [];
+  ui.missionKicker.textContent = "Бонус";
+  ui.feedbackPanel.hidden = true;
+  ui.feedbackPanel.className = "feedback-panel";
+  ui.continueMapBtn.hidden = true;
+
+  if (item.type === "infected-file") {
+    renderInfectedFileBonus(item);
+  }
+  if (item.type === "power-panel") {
+    renderPowerPanelBonus(item);
+  }
+  if (item.type === "cable-puzzle") {
+    renderCablePuzzleBonus(item);
+  }
+
+  ui.missionModal.hidden = false;
+  playSound("click");
+}
+
 function closeMissionModal() {
   ui.missionModal.hidden = true;
   mapState.isMissionOpen = false;
+  const closedKind = mapState.openModalKind;
+  mapState.openModalKind = "";
+  clearMovementInput();
   updateHud();
   renderRoute();
 
@@ -759,8 +979,10 @@ function closeMissionModal() {
     return;
   }
 
-  showToast("Достъпът е разрешен. Следващата зона е отключена.", "success");
-  playSound("unlock");
+  if (closedKind === "mission" && mapState.completedMissions.length > 0) {
+    showToast("Достъпът е разрешен. Следващата зона е отключена.", "success");
+    playSound("unlock");
+  }
 }
 
 function renderInteraction(mission) {
@@ -939,13 +1161,163 @@ function renderTerminalChoiceMission(mission) {
   ui.interactionArea.replaceChildren(panel);
 }
 
+function renderInfectedFileBonus(item) {
+  ui.missionTitle.textContent = "Бонус ниво: Почисти заразените файлове";
+  ui.missionStory.textContent = "Кой файл изглежда най-опасен?";
+  const files = ["homework.docx", "photo.png", "free_game_hack.exe", "presentation.pptx"];
+  const grid = document.createElement("div");
+  grid.className = "file-grid";
+  files.forEach((file) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "file-card";
+    button.dataset.value = file;
+    button.innerHTML = `<span class="file-icon">▤</span><strong>${file}</strong>`;
+    button.addEventListener("click", () => {
+      const isCorrect = file === "free_game_hack.exe";
+      handleBonusResult(item.id, isCorrect, isCorrect ? SCORE_CONFIG.infectedFileCorrect : SCORE_CONFIG.infectedFileWrong, isCorrect
+        ? "Точно така! Файлове с подозрителни имена и .exe разширение могат да бъдат опасни."
+        : "Помисли пак. Файлът free_game_hack.exe изглежда най-съмнителен.");
+      lockChoiceButtons(".file-card", file, "free_game_hack.exe");
+    });
+    grid.append(button);
+  });
+  ui.interactionArea.replaceChildren(grid);
+}
+
+function renderPowerPanelBonus(item) {
+  ui.missionTitle.textContent = "Бонус ниво: Възстанови енергията";
+  ui.missionStory.textContent = "За да включиш резервното захранване, активирай правилната комбинация.";
+  const switches = [
+    { id: "power", label: "Захранване" },
+    { id: "cooling", label: "Охлаждане" },
+    { id: "alarm", label: "Аларма" }
+  ];
+  const panel = document.createElement("div");
+  panel.className = "switch-panel";
+  const list = document.createElement("div");
+  list.className = "switch-list";
+  switches.forEach((switchItem) => {
+    gameState.switchStates[switchItem.id] = Boolean(gameState.switchStates[switchItem.id]);
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `switch-control ${gameState.switchStates[switchItem.id] ? "on" : ""}`;
+    button.innerHTML = `<span class="switch-track"><span class="switch-thumb"></span></span><strong>${switchItem.label}</strong>`;
+    button.addEventListener("click", () => {
+      gameState.switchStates[switchItem.id] = !gameState.switchStates[switchItem.id];
+      renderPowerPanelBonus(item);
+      playSound("click");
+    });
+    list.append(button);
+  });
+  const confirmButton = document.createElement("button");
+  confirmButton.type = "button";
+  confirmButton.className = "button button-primary";
+  confirmButton.textContent = "Включи захранването";
+  confirmButton.addEventListener("click", () => {
+    const isCorrect = gameState.switchStates.power && gameState.switchStates.cooling && !gameState.switchStates.alarm;
+    handleBonusResult(item.id, isCorrect, isCorrect ? SCORE_CONFIG.powerPanelCorrect : SCORE_CONFIG.powerPanelWrong, isCorrect
+      ? "Резервното захранване е включено! +40 точки"
+      : "Комбинацията не е правилна. Провери кои системи са нужни за стабилна работа.");
+  });
+  panel.append(list, confirmButton);
+  ui.interactionArea.replaceChildren(panel);
+}
+
+function renderCablePuzzleBonus(item) {
+  ui.missionTitle.textContent = "Бонус ниво: Мини пъзел с кабели";
+  ui.missionStory.textContent = "Свържи всеки кабел към порт със същия цвят.";
+  const colors = [
+    { id: "blue", cable: "Син кабел", port: "Син порт" },
+    { id: "green", cable: "Зелен кабел", port: "Зелен порт" },
+    { id: "red", cable: "Червен кабел", port: "Червен порт" }
+  ];
+  const panel = document.createElement("div");
+  panel.className = "cable-panel";
+  const cableList = document.createElement("div");
+  cableList.className = "cable-list";
+  const portList = document.createElement("div");
+  portList.className = "cable-list";
+
+  colors.forEach((itemColor) => {
+    const cableButton = document.createElement("button");
+    cableButton.type = "button";
+    cableButton.className = `cable-card cable-${itemColor.id}`;
+    cableButton.classList.toggle("selected", gameState.selectedCable === itemColor.id);
+    cableButton.textContent = itemColor.cable;
+    cableButton.addEventListener("click", () => {
+      gameState.selectedCable = itemColor.id;
+      renderCablePuzzleBonus(item);
+      playSound("click");
+    });
+    cableList.append(cableButton);
+
+    const portButton = document.createElement("button");
+    portButton.type = "button";
+    portButton.className = `cable-card cable-${itemColor.id}`;
+    portButton.textContent = itemColor.port;
+    portButton.addEventListener("click", () => {
+      if (!gameState.selectedCable) return;
+      gameState.cablePairs.push(`${gameState.selectedCable}:${itemColor.id}`);
+      gameState.selectedCable = "";
+      renderCablePuzzleBonus(item);
+      playSound("click");
+    });
+    portList.append(portButton);
+  });
+
+  const pairs = gameState.cablePairs;
+  const result = document.createElement("div");
+  result.className = "cable-result";
+  result.textContent = pairs.length ? `Свързани двойки: ${pairs.length}/3` : "Избери кабел, после порт.";
+  const confirmButton = document.createElement("button");
+  confirmButton.type = "button";
+  confirmButton.className = "button button-primary";
+  confirmButton.textContent = "Потвърди кабелите";
+  confirmButton.disabled = pairs.length < 3;
+  confirmButton.addEventListener("click", () => {
+    const correctPairs = new Set(["blue:blue", "green:green", "red:red"]);
+    const uniquePairs = new Set(pairs);
+    const isCorrect = pairs.length === 3 && uniquePairs.size === 3 && pairs.every((pair) => correctPairs.has(pair));
+    handleBonusResult(item.id, isCorrect, isCorrect ? SCORE_CONFIG.cablePuzzleCorrect : SCORE_CONFIG.cablePuzzleWrong, isCorrect
+      ? "Кабелите са свързани правилно! Мрежата е стабилна."
+      : "Част от кабелите не са в правилните портове. Опитай да съвпаднат по цвят.");
+  });
+  panel.append(cableList, portList, result, confirmButton);
+  ui.interactionArea.replaceChildren(panel);
+}
+
+function handleBonusResult(id, isCorrect, earnedPoints, explanation) {
+  if (mapState.completedBonuses.includes(id)) {
+    showToast("Този бонус вече е изпълнен.", "helper");
+    return;
+  }
+  gameState.score += earnedPoints;
+  completeBonus(id);
+  showFeedback(isCorrect, earnedPoints, explanation, isCorrect ? "Бонусът е завършен." : "Бонусът е отчетен и можеш да продължиш.");
+  ui.continueMapBtn.hidden = false;
+  Array.from(ui.interactionArea.querySelectorAll("button")).forEach((button) => {
+    button.disabled = true;
+    button.classList.add("is-locked");
+  });
+  updateHud();
+  renderMapState();
+  playSound(isCorrect ? "correct" : "wrong");
+}
+
+function completeBonus(id) {
+  if (!mapState.completedBonuses.includes(id)) {
+    mapState.completedBonuses.push(id);
+  }
+}
+
 function handleMissionResult(isCorrect, selectedData) {
   if (gameState.answers[gameState.currentMissionIndex]) {
     return;
   }
 
   const mission = missions[gameState.currentMissionIndex];
-  const earnedPoints = isCorrect ? 100 : 20;
+  const earnedPoints = isCorrect ? SCORE_CONFIG.correctMission : SCORE_CONFIG.wrongMission;
   gameState.score += earnedPoints;
   gameState.answers[gameState.currentMissionIndex] = {
     type: mission.type,
@@ -1029,6 +1401,13 @@ function renderMapState() {
     }
   });
 
+  bonusInteractables.forEach((item) => {
+    const element = ui.mapLayers.querySelector(`[data-id="${item.id}"]`);
+    if (element) {
+      element.classList.toggle("completed-objective", mapState.completedBonuses.includes(item.id));
+    }
+  });
+
   const target = interactables[mapState.activeMissionIndex];
   if (target) {
     ui.objectiveMarker.hidden = false;
@@ -1055,6 +1434,11 @@ function renderRoute() {
   ui.route.replaceChildren(fragment);
 }
 
+function getBonusCount() {
+  const bonusIds = new Set(mapState.completedBonuses);
+  return Math.min(5, bonusIds.size);
+}
+
 function updateHud() {
   const completedCount = mapState.completedMissions.length;
   const mission = missions[Math.min(mapState.activeMissionIndex, missions.length - 1)];
@@ -1062,8 +1446,9 @@ function updateHud() {
   ui.roomStatus.textContent = mapState.currentZone;
   ui.scoreCounter.textContent = String(gameState.score);
   ui.timerCounter.textContent = formatTime(getElapsedSeconds());
-  ui.keyCounter.textContent = `${mapState.collectedKeys}/3`;
+  ui.keyCounter.textContent = `${mapState.collectedKeys}/${collectibles.length}`;
   ui.missionCounter.textContent = `${completedCount}/${missions.length}`;
+  ui.bonusCounter.textContent = `${getBonusCount()}/5`;
   ui.objectiveText.textContent = completedCount >= missions.length ? "Защитата е активирана." : mission.objective;
 }
 
@@ -1092,7 +1477,7 @@ function finishGame() {
   gameState.endTime = Date.now();
   const timeSeconds = Number(Math.max(0.1, getElapsedSeconds()).toFixed(2));
   const timeBonus = calculateTimeBonus(timeSeconds);
-  const finalScore = Math.min(600, gameState.score + timeBonus);
+  const finalScore = Math.min(SCORE_CONFIG.maxScore, gameState.score + timeBonus);
   const title = calculateTitle(finalScore);
 
   gameState.finalResult = {
@@ -1102,7 +1487,8 @@ function finishGame() {
     title,
     timeBonus,
     keys: mapState.collectedKeys,
-    missions: mapState.completedMissions.length
+    missions: mapState.completedMissions.length,
+    bonuses: getBonusCount()
   };
 
   renderResult();
@@ -1113,16 +1499,16 @@ function finishGame() {
 }
 
 function calculateTimeBonus(timeSeconds) {
-  if (timeSeconds < 90) return 50;
-  if (timeSeconds <= 150) return 30;
-  if (timeSeconds <= 210) return 10;
+  if (timeSeconds < 120) return 70;
+  if (timeSeconds <= 210) return 40;
+  if (timeSeconds <= 300) return 20;
   return 0;
 }
 
 function calculateTitle(score) {
-  if (score <= 180) return allowedTitles[0];
-  if (score <= 350) return allowedTitles[1];
-  if (score <= 500) return allowedTitles[2];
+  if (score <= 200) return allowedTitles[0];
+  if (score <= 400) return allowedTitles[1];
+  if (score <= 600) return allowedTitles[2];
   return allowedTitles[3];
 }
 
@@ -1137,8 +1523,9 @@ function renderResult() {
     { label: "Име", value: result.name },
     { label: "Точки", value: String(result.score) },
     { label: "Време", value: formatTime(result.timeSeconds) },
-    { label: "Събрани ключове", value: `${result.keys}/3` },
+    { label: "Събрани ключове", value: `${result.keys}/${collectibles.length}` },
     { label: "Изпълнени мисии", value: `${result.missions}/5` },
+    { label: "Изпълнени бонуси", value: `${result.bonuses}/5` },
     { label: "Бонус за време", value: `+${result.timeBonus}` },
     { label: "Титла", value: result.title }
   ];

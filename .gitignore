@@ -1,4 +1,7 @@
-/node_modules
-/package-lock.json
-/server.err.log
-/server.out.log
+node_modules/
+scores.db
+.env
+.DS_Store
+npm-debug.log
+server.err.log
+server.out.log

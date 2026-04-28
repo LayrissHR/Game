@@ -14,6 +14,7 @@
         <div class="brand-chip">Кибер академия</div>
         <div class="utility-actions">
           <button id="sound-toggle" class="button button-subtle" type="button">Звук: включен</button>
+          <button id="mobile-controls-toggle" class="button button-subtle" type="button">Покажи мобилни бутони</button>
           <button id="event-mode-btn" class="button button-subtle" type="button">Режим за събитие</button>
         </div>
       </header>
@@ -46,7 +47,7 @@
                 <button id="home-leaderboard-btn" class="button button-secondary" type="button">Виж класацията</button>
               </div>
 
-              <p class="promo-note">Кратко 2D приключение за 2-4 минути, създадено за училищно събитие.</p>
+              <p class="promo-note">Кратко 2D приключение за 3-5 минути, създадено за училищно събитие.</p>
             </article>
 
             <aside class="glass-panel hero-visual" aria-hidden="true">
@@ -60,7 +61,7 @@
               </div>
               <div class="feature-cards">
                 <article class="mini-card"><span class="mini-card__value">5</span><span class="mini-card__label">мисии</span></article>
-                <article class="mini-card"><span class="mini-card__value">600</span><span class="mini-card__label">макс. точки</span></article>
+                <article class="mini-card"><span class="mini-card__value">760</span><span class="mini-card__label">макс. точки</span></article>
                 <article class="mini-card"><span class="mini-card__value">E</span><span class="mini-card__label">действие</span></article>
               </div>
             </aside>
@@ -72,8 +73,10 @@
             <p class="eyebrow">Управление</p>
             <h2 id="instructions-title" class="mission-title">Защити сървърната стая</h2>
             <div class="instruction-grid">
-              <div class="instruction-item"><strong>Движение</strong><span>стрелки или WASD</span></div>
-              <div class="instruction-item"><strong>Взаимодействие</strong><span>натисни E до терминал</span></div>
+              <div class="instruction-item desktop-instruction"><strong>Движение</strong><span>стрелки или WASD</span></div>
+              <div class="instruction-item desktop-instruction"><strong>Взаимодействие</strong><span>натисни E до терминал</span></div>
+              <div class="instruction-item mobile-instruction"><strong>Движение</strong><span>използвай бутоните на екрана</span></div>
+              <div class="instruction-item mobile-instruction"><strong>Взаимодействие</strong><span>натисни „Действие“ до терминал или обект</span></div>
               <div class="instruction-item"><strong>Цел</strong><span>премини през стаите, изпълни мисиите и защити сървъра</span></div>
             </div>
             <button id="begin-map-btn" class="button button-primary" type="button">Започни</button>
@@ -88,8 +91,9 @@
                 <article class="status-chip"><span>Точки</span><strong id="score-counter">0</strong></article>
                 <article class="status-chip"><span>Време</span><strong id="timer-counter">00:00</strong></article>
                 <article class="status-chip"><span>Текуща зона</span><strong id="room-status">Входна зала</strong></article>
-                <article class="status-chip"><span>Събрани ключове</span><strong id="key-counter">0/3</strong></article>
+                <article class="status-chip"><span>Ключове</span><strong id="key-counter">0/5</strong></article>
                 <article class="status-chip"><span>Мисии</span><strong id="mission-counter">0/5</strong></article>
+                <article class="status-chip"><span>Бонуси</span><strong id="bonus-counter">0/5</strong></article>
               </div>
 
               <div class="objective-box">
@@ -127,7 +131,7 @@
               <div id="final-badge" class="final-badge"></div>
               <div id="result-summary" class="summary-grid"></div>
               <p class="result-message">
-                Ти премина през Кибер академията, отключи защитните зони и помогна за защитата на училищния сървър.
+                Ти премина през Кибер академията, събра защитни ключове, избегна вирусите и помогна за защитата на училищния сървър.
               </p>
               <p id="save-status" class="message" aria-live="polite"></p>
             </article>
@@ -216,6 +220,16 @@
           <button id="continue-map-btn" class="button button-primary" type="button" hidden>Продължи</button>
         </div>
       </div>
+    </div>
+
+    <div id="mobile-controls" class="mobile-controls" aria-label="Мобилни бутони за управление">
+      <div class="dpad" aria-label="Посоки">
+        <button class="dpad-button dpad-up" type="button" data-direction="up" aria-label="Нагоре">▲</button>
+        <button class="dpad-button dpad-left" type="button" data-direction="left" aria-label="Наляво">◀</button>
+        <button class="dpad-button dpad-right" type="button" data-direction="right" aria-label="Надясно">▶</button>
+        <button class="dpad-button dpad-down" type="button" data-direction="down" aria-label="Надолу">▼</button>
+      </div>
+      <button id="mobile-action-btn" class="action-button" type="button" aria-label="Действие">Действие</button>
     </div>
 
     <noscript>

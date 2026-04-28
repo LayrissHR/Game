@@ -375,6 +375,18 @@ button {
   line-height: 1.45;
 }
 
+.mobile-instruction {
+  display: none;
+}
+
+.show-mobile-controls .desktop-instruction {
+  display: none;
+}
+
+.show-mobile-controls .mobile-instruction {
+  display: grid;
+}
+
 .game-layout {
   display: grid;
   grid-template-columns: 260px minmax(0, 1fr);
@@ -544,6 +556,20 @@ button {
   border-color: rgba(93, 247, 197, 0.75);
   color: #cffff6;
   box-shadow: 0 0 20px rgba(93, 247, 197, 0.26);
+}
+
+.bonus-interactable {
+  border-color: rgba(255, 201, 108, 0.72);
+}
+
+.bonus-interactable span {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(255, 201, 108, 0.2);
+  color: #fff2c6;
 }
 
 .glow-path {
@@ -972,6 +998,63 @@ button {
   font-weight: 800;
 }
 
+.file-grid,
+.cable-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.file-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.file-card,
+.cable-card {
+  min-height: 78px;
+  padding: 14px;
+  border-radius: 12px;
+  background: rgba(15, 28, 57, 0.94);
+  border: 1px solid rgba(146, 215, 255, 0.18);
+  color: var(--text);
+  text-align: left;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.file-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  margin-right: 10px;
+  border-radius: 8px;
+  background: rgba(47, 184, 255, 0.16);
+  color: #9bfbe6;
+}
+
+.cable-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.cable-card.selected {
+  border-color: rgba(255, 201, 108, 0.78);
+  box-shadow: 0 0 18px rgba(255, 201, 108, 0.24);
+}
+
+.cable-blue { border-color: rgba(47, 184, 255, 0.52); }
+.cable-green { border-color: rgba(93, 247, 197, 0.52); }
+.cable-red { border-color: rgba(255, 108, 168, 0.52); }
+
+.cable-result {
+  padding: 12px;
+  border-radius: 12px;
+  color: #d3e6ff;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(146, 215, 255, 0.16);
+}
+
 .is-locked {
   cursor: default;
 }
@@ -1215,6 +1298,61 @@ button {
   z-index: 40;
 }
 
+.mobile-controls {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  z-index: 18;
+  display: none;
+  justify-content: space-between;
+  align-items: end;
+  pointer-events: none;
+}
+
+.show-mobile-controls .mobile-controls {
+  display: flex;
+}
+
+.dpad {
+  width: 168px;
+  height: 168px;
+  display: grid;
+  grid-template-columns: repeat(3, 56px);
+  grid-template-rows: repeat(3, 56px);
+  pointer-events: auto;
+}
+
+.dpad-button,
+.action-button {
+  border-radius: 16px;
+  border: 1px solid rgba(146, 215, 255, 0.35);
+  background: rgba(8, 19, 42, 0.88);
+  color: #eaffff;
+  font-weight: 900;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  touch-action: none;
+  user-select: none;
+}
+
+.dpad-button:active,
+.action-button:active {
+  background: rgba(47, 184, 255, 0.56);
+}
+
+.dpad-up { grid-column: 2; grid-row: 1; }
+.dpad-left { grid-column: 1; grid-row: 2; }
+.dpad-right { grid-column: 3; grid-row: 2; }
+.dpad-down { grid-column: 2; grid-row: 3; }
+
+.action-button {
+  min-width: 118px;
+  min-height: 78px;
+  padding: 16px;
+  pointer-events: auto;
+  background: linear-gradient(135deg, rgba(24, 145, 255, 0.92), rgba(29, 227, 158, 0.86));
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -1333,6 +1471,25 @@ button {
   }
 }
 
+@media (max-width: 900px) {
+  body {
+    padding-bottom: 190px;
+  }
+
+  .map-panel {
+    overflow: hidden;
+  }
+
+  .modal-content {
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+
+  .leaderboard-table {
+    min-width: 680px;
+  }
+}
+
 @media (max-width: 680px) {
   .app-shell {
     padding: 14px;
@@ -1369,5 +1526,60 @@ button {
   .academy-map {
     transform: scale(calc((100vw - 44px) / 900));
     margin-bottom: calc((520px * ((100vw - 44px) / 900)) - 520px);
+  }
+}
+
+@media (max-width: 600px) {
+  .status-chip {
+    min-height: auto;
+    padding: 10px;
+  }
+
+  .route-tracker {
+    display: flex;
+    overflow-x: auto;
+    padding-bottom: 6px;
+  }
+
+  .route-step {
+    min-width: 118px;
+  }
+
+  .dpad {
+    width: 144px;
+    height: 144px;
+    grid-template-columns: repeat(3, 48px);
+    grid-template-rows: repeat(3, 48px);
+  }
+
+  .action-button {
+    min-width: 104px;
+    min-height: 70px;
+    padding: 12px;
+  }
+
+  .file-grid,
+  .cable-list {
+    grid-template-columns: 1fr;
+  }
+
+  .leaderboard-table {
+    min-width: 620px;
+  }
+}
+
+@media (max-width: 900px) and (orientation: landscape) {
+  .mobile-controls {
+    bottom: 8px;
+  }
+
+  .dpad {
+    transform: scale(0.86);
+    transform-origin: bottom left;
+  }
+
+  .action-button {
+    transform: scale(0.9);
+    transform-origin: bottom right;
   }
 }
