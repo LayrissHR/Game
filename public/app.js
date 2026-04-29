@@ -272,7 +272,9 @@ document.addEventListener("DOMContentLoaded", init);
 window.addEventListener("popstate", handleRouteChange);
 document.addEventListener("fullscreenchange", syncEventModeState);
 window.addEventListener("resize", () => {
-  if (ui.body) syncMobileControlsVisibility();
+  if (!ui.body) return;
+  syncMobileControlsVisibility();
+  resizeMapViewport();
 });
 
 function init() {
@@ -284,6 +286,7 @@ function init() {
   buildMap();
   renderRoute();
   showScreen(window.location.pathname === "/leaderboard" ? "leaderboard" : "home", false);
+  resizeMapViewport();
   startGameLoop();
 }
 
@@ -314,6 +317,7 @@ function cacheElements() {
   ui.objectiveText = document.getElementById("objective-text");
   ui.route = document.getElementById("mission-route");
   ui.mapMessage = document.getElementById("map-message");
+  ui.mapViewport = document.getElementById("map-viewport");
   ui.academyMap = document.getElementById("academy-map");
   ui.mapLayers = document.getElementById("map-layers");
   ui.playerAvatar = document.getElementById("player-avatar");
@@ -418,6 +422,14 @@ function syncMobileControlsVisibility() {
   ui.mobileControlsToggle.textContent = shouldShow ? "Скрий мобилни бутони" : "Покажи мобилни бутони";
 }
 
+function resizeMapViewport() {
+  if (!ui.mapViewport || !ui.academyMap) return;
+  const availableWidth = ui.mapViewport.clientWidth || mapWidth;
+  const scale = Math.min(1, availableWidth / mapWidth);
+  ui.academyMap.style.transform = `scale(${scale})`;
+  ui.mapViewport.style.height = `${mapHeight * scale}px`;
+}
+
 function handleRouteChange() {
   showScreen(window.location.pathname === "/leaderboard" ? "leaderboard" : "home", false);
 }
@@ -447,6 +459,7 @@ function showScreen(screenName, pushState = true) {
   }
 
   syncMobileControlsVisibility();
+  resizeMapViewport();
 }
 
 function showInstructions() {
@@ -478,6 +491,7 @@ function startGame() {
   clearConfetti();
   startTimer();
   showScreen("game");
+  resizeMapViewport();
   updateHud();
   renderRoute();
   renderMapState();
@@ -527,6 +541,7 @@ function resetGameState() {
   ui.continueMapBtn.hidden = true;
   ui.toastArea.replaceChildren();
   buildMap();
+  resizeMapViewport();
 }
 
 function prepareNewGame() {
@@ -539,6 +554,7 @@ function goHome() {
   gameState.playerName = "";
   ui.playerNameInput.value = "";
   ui.missionModal.hidden = true;
+  ui.body.classList.remove("modal-open");
   showScreen("home");
 }
 
@@ -926,6 +942,7 @@ function openMissionModal(index) {
   clearMovementInput();
   mapState.isMissionOpen = true;
   mapState.openModalKind = "mission";
+  ui.body.classList.add("modal-open");
   gameState.selectedOrder = [];
   gameState.switchStates = {};
   ui.missionKicker.textContent = `Мисия ${index + 1} от ${missions.length}`;
@@ -943,6 +960,7 @@ function openBonusModal(item) {
   clearMovementInput();
   mapState.isMissionOpen = true;
   mapState.openModalKind = "bonus";
+  ui.body.classList.add("modal-open");
   gameState.switchStates = {};
   gameState.selectedCable = "";
   gameState.cablePairs = [];
@@ -968,6 +986,7 @@ function openBonusModal(item) {
 function closeMissionModal() {
   ui.missionModal.hidden = true;
   mapState.isMissionOpen = false;
+  ui.body.classList.remove("modal-open");
   const closedKind = mapState.openModalKind;
   mapState.openModalKind = "";
   clearMovementInput();

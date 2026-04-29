@@ -11,6 +11,10 @@
   --danger: #ff6ca8;
   --warning: #ffc96c;
   --shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  --page-pad: clamp(14px, 2.4vw, 24px);
+  --panel-pad: clamp(18px, 3vw, 30px);
+  --gap: clamp(12px, 2vw, 22px);
+  --radius: 16px;
 }
 
 * {
@@ -32,6 +36,10 @@ body {
     radial-gradient(circle at 30% 88%, rgba(93, 247, 197, 0.12), transparent 26%),
     linear-gradient(180deg, #030510 0%, #071024 56%, #040811 100%);
   overflow-x: hidden;
+}
+
+body.modal-open {
+  overflow: hidden;
 }
 
 button,
@@ -61,10 +69,10 @@ button {
   position: relative;
   z-index: 1;
   min-height: 100vh;
-  padding: 22px;
+  padding: var(--page-pad);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--gap);
 }
 
 .utility-bar,
@@ -81,6 +89,11 @@ button {
 
 .utility-bar {
   justify-content: space-between;
+  min-width: 0;
+}
+
+.utility-actions {
+  justify-content: flex-end;
 }
 
 .brand-chip {
@@ -96,11 +109,13 @@ button {
 .main-stage {
   flex: 1;
   display: flex;
+  min-width: 0;
 }
 
 .screen {
   display: none;
   width: 100%;
+  min-width: 0;
   animation: screenFade 0.25s ease;
 }
 
@@ -112,7 +127,7 @@ button {
 .modal-content {
   background: linear-gradient(180deg, rgba(12, 21, 45, 0.92), rgba(9, 15, 33, 0.8));
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: var(--radius);
   box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(14px);
 }
@@ -120,7 +135,7 @@ button {
 .hero-layout {
   display: grid;
   grid-template-columns: minmax(0, 1.05fr) minmax(300px, 0.95fr);
-  gap: 22px;
+  gap: var(--gap);
 }
 
 .hero-copy,
@@ -129,7 +144,7 @@ button {
 .summary-card,
 .promo-card,
 .leaderboard-layout {
-  padding: 30px;
+  padding: var(--panel-pad);
 }
 
 .hero-copy {
@@ -170,6 +185,7 @@ button {
   margin: 0;
   color: #d3e6ff;
   line-height: 1.58;
+  overflow-wrap: anywhere;
 }
 
 .name-panel {
@@ -196,6 +212,7 @@ button {
 .button {
   min-height: 52px;
   padding: 13px 20px;
+  max-width: 100%;
   border-radius: 12px;
   color: var(--text);
   font-weight: 800;
@@ -397,6 +414,11 @@ button {
 .map-hud,
 .map-panel {
   padding: 16px;
+  min-width: 0;
+}
+
+.map-panel {
+  overflow: hidden;
 }
 
 .status-row {
@@ -458,15 +480,22 @@ button {
   opacity: 0.52;
 }
 
-.academy-map {
+.map-viewport {
   position: relative;
-  width: 900px;
+  width: 100%;
+  max-width: 900px;
   height: 520px;
-  max-width: 100%;
-  aspect-ratio: 90 / 52;
   overflow: hidden;
   margin: 0 auto;
   border-radius: 12px;
+}
+
+.academy-map {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 900px;
+  height: 520px;
   border: 2px solid rgba(146, 215, 255, 0.22);
   background:
     linear-gradient(90deg, rgba(47, 184, 255, 0.08) 1px, transparent 1px),
@@ -764,11 +793,13 @@ button {
   position: fixed;
   inset: 0;
   z-index: 25;
-  display: grid;
-  place-items: center;
-  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--page-pad);
   background: rgba(2, 6, 18, 0.78);
   backdrop-filter: blur(8px);
+  overflow: hidden;
 }
 
 .mission-modal[hidden] {
@@ -777,11 +808,12 @@ button {
 
 .modal-content {
   width: min(980px, 100%);
-  max-height: calc(100vh - 40px);
-  overflow: auto;
-  padding: 24px;
+  max-height: min(860px, calc(100dvh - (var(--page-pad) * 2)));
+  overflow-y: auto;
+  padding: var(--panel-pad);
   display: grid;
   gap: 16px;
+  overscroll-behavior: contain;
 }
 
 .interaction-area {
@@ -1436,11 +1468,6 @@ button {
   .route-tracker {
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }
-
-  .academy-map {
-    transform: scale(calc((100vw - 76px) / 900));
-    margin-bottom: calc((520px * ((100vw - 76px) / 900)) - 520px);
-  }
 }
 
 @media (max-width: 1100px) {
@@ -1473,11 +1500,11 @@ button {
 
 @media (max-width: 900px) {
   body {
-    padding-bottom: 190px;
+    padding-bottom: 0;
   }
 
-  .map-panel {
-    overflow: hidden;
+  .show-mobile-controls {
+    padding-bottom: 190px;
   }
 
   .modal-content {
@@ -1492,13 +1519,21 @@ button {
 
 @media (max-width: 680px) {
   .app-shell {
-    padding: 14px;
+    padding: var(--page-pad);
   }
 
   .utility-bar,
   .leaderboard-header {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .utility-actions,
+  .home-actions,
+  .result-actions,
+  .leaderboard-actions {
+    display: grid;
+    grid-template-columns: 1fr;
   }
 
   .feature-cards,
@@ -1516,20 +1551,33 @@ button {
   .promo-card,
   .leaderboard-layout,
   .modal-content {
-    padding: 20px;
+    padding: var(--panel-pad);
   }
 
   .home-title {
     font-size: 2.25rem;
   }
 
-  .academy-map {
-    transform: scale(calc((100vw - 44px) / 900));
-    margin-bottom: calc((520px * ((100vw - 44px) / 900)) - 520px);
+  .mission-modal {
+    align-items: stretch;
   }
+
+  .modal-content {
+    width: 100%;
+  }
+
 }
 
 @media (max-width: 600px) {
+  .app-shell {
+    min-height: auto;
+  }
+
+  .glass-panel,
+  .modal-content {
+    border-radius: 12px;
+  }
+
   .status-chip {
     min-height: auto;
     padding: 10px;
@@ -1558,13 +1606,66 @@ button {
     padding: 12px;
   }
 
+  .mobile-controls {
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+  }
+
   .file-grid,
   .cable-list {
     grid-template-columns: 1fr;
   }
 
   .leaderboard-table {
-    min-width: 620px;
+    min-width: 0;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+  }
+
+  .leaderboard-table thead {
+    display: none;
+  }
+
+  .leaderboard-table,
+  .leaderboard-table tbody,
+  .leaderboard-table tr,
+  .leaderboard-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .leaderboard-table tbody tr {
+    padding: 12px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(146, 215, 255, 0.16);
+  }
+
+  .leaderboard-table td {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 8px 0;
+    border-top: 0;
+    text-align: right;
+  }
+
+  .leaderboard-table td::before {
+    color: var(--muted);
+    font-weight: 800;
+    text-align: left;
+  }
+
+  .leaderboard-table td:nth-child(1)::before { content: "Място"; }
+  .leaderboard-table td:nth-child(2)::before { content: "Име"; }
+  .leaderboard-table td:nth-child(3)::before { content: "Точки"; }
+  .leaderboard-table td:nth-child(4)::before { content: "Време"; }
+  .leaderboard-table td:nth-child(5)::before { content: "Титла"; }
+  .leaderboard-table td:nth-child(6)::before { content: "Дата"; }
+
+  .top-rank-label {
+    display: none;
   }
 }
 
