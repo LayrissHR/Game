@@ -286,7 +286,7 @@ function init() {
   buildMap();
   renderRoute();
   showScreen(window.location.pathname === "/leaderboard" ? "leaderboard" : "home", false);
-  resizeMapViewport();
+  scheduleMapResize();
   startGameLoop();
 }
 
@@ -424,10 +424,17 @@ function syncMobileControlsVisibility() {
 
 function resizeMapViewport() {
   if (!ui.mapViewport || !ui.academyMap) return;
-  const availableWidth = ui.mapViewport.clientWidth || mapWidth;
+  const panelWidth = ui.mapViewport.parentElement?.clientWidth || window.innerWidth || mapWidth;
+  const availableWidth = Math.min(mapWidth, Math.max(280, panelWidth - 32));
   const scale = Math.min(1, availableWidth / mapWidth);
+  ui.mapViewport.style.width = `${mapWidth * scale}px`;
   ui.academyMap.style.transform = `scale(${scale})`;
   ui.mapViewport.style.height = `${mapHeight * scale}px`;
+}
+
+function scheduleMapResize() {
+  resizeMapViewport();
+  window.requestAnimationFrame(resizeMapViewport);
 }
 
 function handleRouteChange() {
@@ -459,7 +466,7 @@ function showScreen(screenName, pushState = true) {
   }
 
   syncMobileControlsVisibility();
-  resizeMapViewport();
+  scheduleMapResize();
 }
 
 function showInstructions() {
@@ -491,7 +498,7 @@ function startGame() {
   clearConfetti();
   startTimer();
   showScreen("game");
-  resizeMapViewport();
+  scheduleMapResize();
   updateHud();
   renderRoute();
   renderMapState();
@@ -541,7 +548,7 @@ function resetGameState() {
   ui.continueMapBtn.hidden = true;
   ui.toastArea.replaceChildren();
   buildMap();
-  resizeMapViewport();
+  scheduleMapResize();
 }
 
 function prepareNewGame() {

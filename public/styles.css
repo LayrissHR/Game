@@ -482,12 +482,13 @@ button {
 
 .map-viewport {
   position: relative;
-  width: 100%;
+  width: min(100%, 900px);
   max-width: 900px;
   height: 520px;
   overflow: hidden;
   margin: 0 auto;
   border-radius: 12px;
+  background: rgba(6, 16, 38, 0.98);
 }
 
 .academy-map {
@@ -502,7 +503,7 @@ button {
     linear-gradient(rgba(47, 184, 255, 0.08) 1px, transparent 1px),
     linear-gradient(180deg, rgba(6, 16, 38, 0.98), rgba(4, 9, 22, 0.98));
   background-size: 30px 30px;
-  transform-origin: top center;
+  transform-origin: top left;
 }
 
 #map-layers,
