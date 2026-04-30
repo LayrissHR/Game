@@ -516,6 +516,8 @@ button {
     linear-gradient(180deg, rgba(6, 16, 38, 0.98), rgba(4, 9, 22, 0.98));
   background-size: 30px 30px;
   transform-origin: top left;
+  will-change: transform;
+  contain: layout paint;
 }
 
 #map-layers,
@@ -807,7 +809,7 @@ button {
   inset: 0;
   z-index: 25;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   padding: var(--page-pad);
   background: rgba(2, 6, 18, 0.78);
@@ -822,6 +824,7 @@ button {
 .modal-content {
   width: min(980px, 100%);
   max-height: min(860px, calc(100dvh - (var(--page-pad) * 2)));
+  margin: 0;
   overflow-y: auto;
   padding: var(--panel-pad);
   display: grid;
@@ -1364,6 +1367,10 @@ button {
   padding-bottom: 0;
 }
 
+.mobile-map-mode .background-grid {
+  display: none;
+}
+
 .mobile-map-mode .app-shell {
   min-height: 100dvh;
   padding: 0;
@@ -1468,6 +1475,8 @@ button {
 .mobile-map-mode .map-viewport {
   margin: 0 auto;
   border-radius: 12px;
+  contain: strict;
+  transform: translateZ(0);
 }
 
 .mobile-map-mode .toast-area {
@@ -1490,6 +1499,19 @@ button {
   z-index: 30;
   padding: 10px;
   background: rgba(2, 6, 18, 0.62);
+}
+
+.mobile-map-mode .current-objective,
+.mobile-map-mode .collectible-key,
+.mobile-map-mode .objective-marker {
+  animation: none;
+}
+
+.mobile-map-mode .glow-path,
+.mobile-map-mode .current-objective,
+.mobile-map-mode .collectible-key,
+.mobile-map-mode .virus {
+  box-shadow: none;
 }
 
 .mobile-map-mode .modal-content {

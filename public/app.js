@@ -333,6 +333,7 @@ function cacheElements() {
   ui.objectiveMarker = document.getElementById("objective-marker");
   ui.toastArea = document.getElementById("toast-area");
   ui.missionModal = document.getElementById("mission-modal");
+  ui.modalContent = ui.missionModal.querySelector(".modal-content");
   ui.missionKicker = document.getElementById("mission-kicker");
   ui.missionTitle = document.getElementById("mission-title");
   ui.missionStory = document.getElementById("mission-story");
@@ -562,7 +563,7 @@ function updateCamera() {
 
 function applyCameraTransform() {
   const { x, y, scale } = mapState.camera;
-  ui.academyMap.style.transform = `matrix(${scale}, 0, 0, ${scale}, ${-x * scale}, ${-y * scale})`;
+  ui.academyMap.style.transform = `translate3d(${-x * scale}px, ${-y * scale}px, 0) scale(${scale})`;
 }
 
 function handleRouteChange() {
@@ -634,7 +635,9 @@ function startGame() {
   updateHud();
   renderRoute();
   renderMapState();
-  showToast("Мисията започва! Намери първия терминал.", "helper");
+  if (!isMobileMapMode()) {
+    showToast("Мисията започва! Намери първия терминал.", "helper");
+  }
   playSound("unlock");
 }
 
@@ -878,6 +881,7 @@ function createMapElement(className, rect) {
 
 function updatePlayerMovement() {
   const player = mapState.player;
+  const speed = isMobileMapMode() ? player.speed * 1.22 : player.speed;
   let dx = 0;
   let dy = 0;
 
@@ -895,8 +899,8 @@ function updatePlayerMovement() {
     dy *= 0.707;
   }
 
-  movePlayer(dx * player.speed, 0);
-  movePlayer(0, dy * player.speed);
+  movePlayer(dx * speed, 0);
+  movePlayer(0, dy * speed);
 }
 
 function movePlayer(dx, dy) {
@@ -945,14 +949,6 @@ function updateHazards() {
       hazard.dy *= -1;
       hazard.y = clamp(hazard.y, hazard.minY, hazard.maxY);
     }
-  });
-
-  bonusInteractables.forEach((item) => {
-    const element = ui.mapLayers?.querySelector(`[data-id="${item.id}"]`);
-    if (!element) return;
-    const completed = mapState.completedBonuses.includes(item.id);
-    element.classList.toggle("current-objective", !completed);
-    element.classList.toggle("completed-objective", completed);
   });
 }
 
@@ -1158,6 +1154,7 @@ function openMissionModal(index) {
   ui.continueMapBtn.hidden = true;
   renderInteraction(mission);
   ui.missionModal.hidden = false;
+  resetMissionModalScroll();
   scheduleMapResize();
   playSound("click");
 }
@@ -1186,12 +1183,14 @@ function openBonusModal(item) {
   }
 
   ui.missionModal.hidden = false;
+  resetMissionModalScroll();
   scheduleMapResize();
   playSound("click");
 }
 
 function closeMissionModal() {
   ui.missionModal.hidden = true;
+  resetMissionModalScroll();
   mapState.isMissionOpen = false;
   ui.body.classList.remove("modal-open");
   const closedKind = mapState.openModalKind;
@@ -1209,6 +1208,16 @@ function closeMissionModal() {
     showToast("Достъпът е разрешен. Следващата зона е отключена.", "success");
     playSound("unlock");
   }
+}
+
+function resetMissionModalScroll() {
+  if (!ui.missionModal || !ui.modalContent) return;
+  ui.missionModal.scrollTop = 0;
+  ui.modalContent.scrollTop = 0;
+  window.requestAnimationFrame(() => {
+    ui.missionModal.scrollTop = 0;
+    ui.modalContent.scrollTop = 0;
+  });
 }
 
 function renderInteraction(mission) {
