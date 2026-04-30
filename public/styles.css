@@ -404,6 +404,14 @@ button {
   display: grid;
 }
 
+.touch-device .desktop-instruction {
+  display: none;
+}
+
+.touch-device .mobile-instruction {
+  display: grid;
+}
+
 .game-layout {
   display: grid;
   grid-template-columns: 260px minmax(0, 1fr);
@@ -1347,6 +1355,117 @@ button {
   display: flex;
 }
 
+.mobile-map-mode {
+  overflow: hidden;
+  padding-bottom: 0;
+}
+
+.mobile-map-mode .app-shell {
+  min-height: 100dvh;
+  padding: 0;
+}
+
+.mobile-map-mode .utility-bar {
+  display: none;
+}
+
+.mobile-map-mode .main-stage,
+.mobile-map-mode #screen-game,
+.mobile-map-mode .game-layout {
+  min-height: 100dvh;
+}
+
+.mobile-map-mode .game-layout {
+  position: fixed;
+  inset: 0;
+  z-index: 12;
+  display: block;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(47, 184, 255, 0.14), transparent 48%),
+    #020714;
+}
+
+.mobile-map-mode .map-panel {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 64px 6px 8px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.mobile-map-mode .map-hud {
+  position: fixed;
+  left: 8px;
+  right: 8px;
+  top: 8px;
+  z-index: 19;
+  padding: 8px;
+  border-radius: 12px;
+  background: rgba(5, 14, 32, 0.9);
+  backdrop-filter: blur(10px);
+}
+
+.mobile-map-mode .status-row {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.mobile-map-mode .status-chip {
+  min-height: 0;
+  padding: 6px 7px;
+}
+
+.mobile-map-mode .status-chip span {
+  margin-bottom: 2px;
+  font-size: 0.64rem;
+}
+
+.mobile-map-mode .status-chip strong {
+  font-size: 0.76rem;
+  line-height: 1.15;
+}
+
+.mobile-map-mode .objective-box,
+.mobile-map-mode .route-tracker,
+.mobile-map-mode #map-message {
+  display: none;
+}
+
+.mobile-map-mode .map-viewport {
+  margin: 0 auto;
+  border-radius: 12px;
+}
+
+.mobile-map-mode .toast-area {
+  left: 10px;
+  right: 10px;
+  bottom: 96px;
+  justify-items: center;
+}
+
+.mobile-map-mode .toast-message {
+  max-width: min(420px, calc(100vw - 20px));
+}
+
+.mobile-map-mode .mobile-controls {
+  display: flex;
+  z-index: 22;
+}
+
+.mobile-map-mode .mission-modal {
+  z-index: 30;
+  padding: 10px;
+  background: rgba(2, 6, 18, 0.62);
+}
+
+.mobile-map-mode .modal-content {
+  width: min(96vw, 760px);
+  max-height: calc(100dvh - 20px);
+}
+
 .dpad {
   width: 168px;
   height: 168px;
@@ -1506,6 +1625,10 @@ button {
 
   .show-mobile-controls {
     padding-bottom: 190px;
+  }
+
+  .mobile-map-mode.show-mobile-controls {
+    padding-bottom: 0;
   }
 
   .modal-content {
@@ -1671,6 +1794,14 @@ button {
 }
 
 @media (max-width: 900px) and (orientation: landscape) {
+  .mobile-map-mode .map-panel {
+    padding: 52px 6px 6px;
+  }
+
+  .mobile-map-mode .status-row {
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+  }
+
   .mobile-controls {
     bottom: 8px;
   }

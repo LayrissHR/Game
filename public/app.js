@@ -247,6 +247,8 @@ const inputState = {
 
 const mapState = {
   player: { x: 76, y: 146, width: 32, height: 32, speed: 3 },
+  maxLives: 3,
+  lives: 3,
   currentZone: "Входна зала",
   activeMissionIndex: 0,
   completedMissions: [],
@@ -271,10 +273,11 @@ let audioContext = null;
 document.addEventListener("DOMContentLoaded", init);
 window.addEventListener("popstate", handleRouteChange);
 document.addEventListener("fullscreenchange", syncEventModeState);
+window.addEventListener("orientationchange", () => window.setTimeout(scheduleMapResize, 120));
 window.addEventListener("resize", () => {
   if (!ui.body) return;
   syncMobileControlsVisibility();
-  resizeMapViewport();
+  scheduleMapResize();
 });
 
 function init() {
@@ -313,6 +316,7 @@ function cacheElements() {
   ui.scoreCounter = document.getElementById("score-counter");
   ui.timerCounter = document.getElementById("timer-counter");
   ui.keyCounter = document.getElementById("key-counter");
+  ui.lifeCounter = document.getElementById("life-counter");
   ui.bonusCounter = document.getElementById("bonus-counter");
   ui.objectiveText = document.getElementById("objective-text");
   ui.route = document.getElementById("mission-route");
@@ -336,6 +340,8 @@ function cacheElements() {
   ui.feedbackNote = document.getElementById("feedback-note");
   ui.continueMapBtn = document.getElementById("continue-map-btn");
   ui.resultSummary = document.getElementById("result-summary");
+  ui.resultTitle = document.getElementById("result-title");
+  ui.resultMessage = document.getElementById("result-message");
   ui.finalBadge = document.getElementById("final-badge");
   ui.saveStatus = document.getElementById("save-status");
   ui.resultNewGameBtn = document.getElementById("result-new-game-btn");
@@ -417,16 +423,77 @@ function toggleMobileControls() {
 
 function syncMobileControlsVisibility() {
   if (!ui.mobileControls || !ui.mobileControlsToggle) return;
-  const shouldShow = gameState.screen === "map" && (mapState.mobileControlsForced || window.matchMedia("(pointer: coarse)").matches);
+  const touchDevice = isTouchDevice();
+  const shouldShow = gameState.screen === "map" && (mapState.mobileControlsForced || touchDevice);
+  ui.body.classList.toggle("touch-device", touchDevice);
   ui.body.classList.toggle("show-mobile-controls", shouldShow);
   ui.mobileControlsToggle.textContent = shouldShow ? "Скрий мобилни бутони" : "Покажи мобилни бутони";
 }
 
+function isTouchDevice() {
+  return window.matchMedia("(pointer: coarse)").matches || window.innerWidth <= 900;
+}
+
+function isMobileMapMode() {
+  return ui.body?.classList.contains("mobile-map-mode");
+}
+
+async function activateMobileMapMode() {
+  if (!isTouchDevice()) {
+    scheduleMapResize();
+    return;
+  }
+
+  ui.body.classList.add("mobile-map-mode");
+  syncMobileControlsVisibility();
+  scheduleMapResize();
+  showToast("Завърти телефона хоризонтално за по-удобна игра.", "helper");
+
+  try {
+    if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+      await document.documentElement.requestFullscreen();
+    }
+  } catch (error) {
+    // Fullscreen can be denied by the browser; the game still works without it.
+  }
+
+  try {
+    await screen.orientation?.lock?.("landscape");
+  } catch (error) {
+    // Orientation lock is only available in some mobile browsers after fullscreen.
+  }
+
+  scheduleMapResize();
+}
+
+function deactivateMobileMapMode() {
+  if (!ui.body?.classList.contains("mobile-map-mode")) return;
+  ui.body.classList.remove("mobile-map-mode");
+  syncMobileControlsVisibility();
+  try {
+    screen.orientation?.unlock?.();
+  } catch (error) {
+    // Some browsers do not expose orientation unlock.
+  }
+  if (document.fullscreenElement && document.exitFullscreen) {
+    document.exitFullscreen().catch(() => {});
+  }
+  scheduleMapResize();
+}
+
 function resizeMapViewport() {
   if (!ui.mapViewport || !ui.academyMap) return;
-  const panelWidth = ui.mapViewport.parentElement?.clientWidth || window.innerWidth || mapWidth;
-  const availableWidth = Math.min(mapWidth, Math.max(280, panelWidth - 32));
-  const scale = Math.min(1, availableWidth / mapWidth);
+  const panel = ui.mapViewport.parentElement;
+  const rect = panel?.getBoundingClientRect();
+  const mobileMode = isMobileMapMode();
+  const landscapeMode = window.matchMedia("(orientation: landscape)").matches;
+  const hudHeight = mobileMode ? (document.querySelector(".map-hud")?.getBoundingClientRect().height || 0) : 0;
+  const controlsHeight = mobileMode ? (landscapeMode ? 8 : 90) : 0;
+  const availableWidth = Math.max(280, (rect?.width || window.innerWidth || mapWidth) - (mobileMode ? 12 : 32));
+  const availableHeight = mobileMode
+    ? Math.max(220, window.innerHeight - hudHeight - controlsHeight - 18)
+    : Math.max(260, rect?.height || mapHeight);
+  const scale = Math.min(1, availableWidth / mapWidth, availableHeight / mapHeight);
   ui.mapViewport.style.width = `${mapWidth * scale}px`;
   ui.academyMap.style.transform = `scale(${scale})`;
   ui.mapViewport.style.height = `${mapHeight * scale}px`;
@@ -444,6 +511,9 @@ function handleRouteChange() {
 function showScreen(screenName, pushState = true) {
   clearMovementInput();
   gameState.screen = screenName === "game" ? "map" : screenName;
+  if (screenName !== "game") {
+    deactivateMobileMapMode();
+  }
   Object.entries(ui.screens).forEach(([name, element]) => {
     const isActive = name === screenName;
     element.hidden = !isActive;
@@ -498,6 +568,7 @@ function startGame() {
   clearConfetti();
   startTimer();
   showScreen("game");
+  activateMobileMapMode();
   scheduleMapResize();
   updateHud();
   renderRoute();
@@ -521,6 +592,7 @@ function resetGameState() {
   gameState.finalResult = null;
   mapState.player.x = 76;
   mapState.player.y = 146;
+  mapState.lives = mapState.maxLives;
   mapState.currentZone = "Входна зала";
   mapState.activeMissionIndex = 0;
   mapState.completedMissions = [];
@@ -672,14 +744,34 @@ function buildMap() {
   interactables.forEach((item) => {
     const element = createMapElement(`interactable ${item.className}`, item);
     element.dataset.id = item.id;
+    element.setAttribute("role", "button");
+    element.setAttribute("tabindex", "0");
+    element.setAttribute("aria-label", item.prompt);
     element.innerHTML = `<span></span><strong>${item.label}</strong>`;
+    element.addEventListener("pointerup", (event) => handleMapObjectTap(event, item));
+    element.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        activateMapObject(item);
+      }
+    });
     fragment.append(element);
   });
 
   bonusInteractables.forEach((item) => {
     const element = createMapElement(`interactable bonus-interactable ${item.className}`, item);
     element.dataset.id = item.id;
+    element.setAttribute("role", "button");
+    element.setAttribute("tabindex", "0");
+    element.setAttribute("aria-label", item.prompt);
     element.innerHTML = `<span>★</span><strong>${item.label}</strong>`;
+    element.addEventListener("pointerup", (event) => handleMapObjectTap(event, item));
+    element.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        activateMapObject(item);
+      }
+    });
     fragment.append(element);
   });
 
@@ -858,11 +950,21 @@ function checkHazards() {
   }
 
   gameState.score = Math.max(0, gameState.score - SCORE_CONFIG.virusPenalty);
+  mapState.lives = Math.max(0, mapState.lives - 1);
   mapState.virusCooldown = true;
   ui.playerAvatar.classList.add("hit");
-  showToast("Докосна вирус! -10 точки", "error");
+  showToast(mapState.lives > 0 ? "Докосна вирус! -1 живот и -10 точки" : "Нямаш останали животи!", "error");
   playSound("wrong");
   updateHud();
+
+  if (mapState.lives <= 0) {
+    window.setTimeout(() => {
+      ui.playerAvatar.classList.remove("hit");
+      finishGame({ defeated: true });
+    }, 350);
+    return;
+  }
+
   window.setTimeout(() => {
     mapState.virusCooldown = false;
     ui.playerAvatar.classList.remove("hit");
@@ -900,15 +1002,16 @@ function checkNearbyInteractable() {
   ui.interactionPrompt.hidden = false;
   const isBonus = Boolean(item.type);
   const bonusDone = isBonus && mapState.completedBonuses.includes(item.id);
+  const missionDone = !isBonus && mapState.completedMissions.includes(item.missionIndex);
   ui.interactionPrompt.textContent = isBonus
     ? bonusDone ? "Завършено" : "Натисни E"
-    : item.missionIndex === mapState.activeMissionIndex ? "Натисни E" : "Заключено";
+    : missionDone ? "Завършено" : item.missionIndex === mapState.activeMissionIndex ? "Натисни E" : "Заключено";
   ui.interactionPrompt.style.left = `${item.x + item.w / 2}px`;
   ui.interactionPrompt.style.top = `${item.y - 12}px`;
   if (isBonus) {
     setMapMessage(bonusDone ? "Този бонус вече е изпълнен." : item.prompt);
   } else {
-    setMapMessage(item.missionIndex === mapState.activeMissionIndex ? item.prompt : "Тази зона все още е заключена.");
+    setMapMessage(missionDone ? "Тази мисия вече е изпълнена." : item.missionIndex === mapState.activeMissionIndex ? item.prompt : "Тази зона все още е заключена.");
   }
 }
 
@@ -919,6 +1022,23 @@ function tryInteraction() {
 
   const item = mapState.nearbyInteractable;
   if (!item) {
+    return;
+  }
+
+  activateMapObject(item);
+}
+
+function handleMapObjectTap(event, item) {
+  event.preventDefault();
+  event.stopPropagation();
+  if (isTypingInInput() || gameState.screen !== "map") {
+    return;
+  }
+  activateMapObject(item);
+}
+
+function activateMapObject(item) {
+  if (mapState.isMissionOpen || mapState.isGameOver || mapState.interactionCooldown || !ui.screens.game.classList.contains("active")) {
     return;
   }
 
@@ -933,6 +1053,11 @@ function tryInteraction() {
       return;
     }
     openBonusModal(item);
+    return;
+  }
+
+  if (mapState.completedMissions.includes(item.missionIndex)) {
+    showToast("Тази мисия вече е изпълнена.", "helper");
     return;
   }
 
@@ -960,6 +1085,7 @@ function openMissionModal(index) {
   ui.continueMapBtn.hidden = true;
   renderInteraction(mission);
   ui.missionModal.hidden = false;
+  scheduleMapResize();
   playSound("click");
 }
 
@@ -987,6 +1113,7 @@ function openBonusModal(item) {
   }
 
   ui.missionModal.hidden = false;
+  scheduleMapResize();
   playSound("click");
 }
 
@@ -1473,6 +1600,7 @@ function updateHud() {
   ui.scoreCounter.textContent = String(gameState.score);
   ui.timerCounter.textContent = formatTime(getElapsedSeconds());
   ui.keyCounter.textContent = `${mapState.collectedKeys}/${collectibles.length}`;
+  ui.lifeCounter.textContent = `${mapState.lives}/${mapState.maxLives}`;
   ui.missionCounter.textContent = `${completedCount}/${missions.length}`;
   ui.bonusCounter.textContent = `${getBonusCount()}/5`;
   ui.objectiveText.textContent = completedCount >= missions.length ? "Защитата е активирана." : mission.objective;
@@ -1493,16 +1621,17 @@ function showToast(text, type = "helper") {
   window.setTimeout(() => toast.remove(), 2200);
 }
 
-function finishGame() {
+function finishGame(options = {}) {
   if (mapState.isGameOver) {
     return;
   }
 
+  const defeated = Boolean(options.defeated);
   mapState.isGameOver = true;
   stopTimer();
   gameState.endTime = Date.now();
   const timeSeconds = Number(Math.max(0.1, getElapsedSeconds()).toFixed(2));
-  const timeBonus = calculateTimeBonus(timeSeconds);
+  const timeBonus = defeated ? 0 : calculateTimeBonus(timeSeconds);
   const finalScore = Math.min(SCORE_CONFIG.maxScore, gameState.score + timeBonus);
   const title = calculateTitle(finalScore);
 
@@ -1512,15 +1641,21 @@ function finishGame() {
     timeSeconds,
     title,
     timeBonus,
+    lives: mapState.lives,
     keys: mapState.collectedKeys,
     missions: mapState.completedMissions.length,
-    bonuses: getBonusCount()
+    bonuses: getBonusCount(),
+    defeated
   };
 
   renderResult();
   showScreen("result");
-  launchConfetti();
-  playSound("success");
+  if (!defeated) {
+    launchConfetti();
+    playSound("success");
+  } else {
+    playSound("wrong");
+  }
   saveScore();
 }
 
@@ -1544,11 +1679,16 @@ function renderResult() {
 
   ui.finalBadge.className = `final-badge ${titleBadgeClasses[result.title] || "badge-blue"}`;
   ui.finalBadge.textContent = result.title;
+  ui.resultTitle.textContent = result.defeated ? "Мисията приключи!" : "Сървърната стая е защитена!";
+  ui.resultMessage.textContent = result.defeated
+    ? "Вирусите изчерпаха животите ти. Опитай отново, събери ключове и пази героя от опасните зони."
+    : "Ти премина през Кибер академията, събра защитни ключове, избегна вирусите и помогна за защитата на училищния сървър.";
 
   const items = [
     { label: "Име", value: result.name },
     { label: "Точки", value: String(result.score) },
     { label: "Време", value: formatTime(result.timeSeconds) },
+    { label: "Оставащи животи", value: `${result.lives}/${mapState.maxLives}` },
     { label: "Събрани ключове", value: `${result.keys}/${collectibles.length}` },
     { label: "Изпълнени мисии", value: `${result.missions}/5` },
     { label: "Изпълнени бонуси", value: `${result.bonuses}/5` },
