@@ -1066,15 +1066,26 @@ function checkNearbyInteractable() {
   const bonusDone = isBonus && mapState.completedBonuses.includes(item.id);
   const missionDone = !isBonus && mapState.completedMissions.includes(item.missionIndex);
   ui.interactionPrompt.textContent = isBonus
-    ? bonusDone ? "Завършено" : "Натисни E"
-    : missionDone ? "Завършено" : item.missionIndex === mapState.activeMissionIndex ? "Натисни E" : "Заключено";
+    ? bonusDone ? "Завършено" : getActionPromptText()
+    : missionDone ? "Завършено" : item.missionIndex === mapState.activeMissionIndex ? getActionPromptText() : "Заключено";
   ui.interactionPrompt.style.left = `${item.x + item.w / 2}px`;
   ui.interactionPrompt.style.top = `${item.y - 12}px`;
   if (isBonus) {
-    setMapMessage(bonusDone ? "Този бонус вече е изпълнен." : item.prompt);
+    setMapMessage(bonusDone ? "Този бонус вече е изпълнен." : getInteractionMessage(item.prompt));
   } else {
-    setMapMessage(missionDone ? "Тази мисия вече е изпълнена." : item.missionIndex === mapState.activeMissionIndex ? item.prompt : "Тази зона все още е заключена.");
+    setMapMessage(missionDone ? "Тази мисия вече е изпълнена." : item.missionIndex === mapState.activeMissionIndex ? getInteractionMessage(item.prompt) : "Тази зона все още е заключена.");
   }
+}
+
+function getActionPromptText() {
+  return isTouchDevice() ? "Действие" : "Натисни E";
+}
+
+function getInteractionMessage(text) {
+  if (!isTouchDevice()) {
+    return text;
+  }
+  return String(text).replace("Натисни E", "Натисни „Действие“");
 }
 
 function tryInteraction() {
