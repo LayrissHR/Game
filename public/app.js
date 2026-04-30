@@ -247,6 +247,7 @@ const inputState = {
 
 const mapState = {
   player: { x: 76, y: 146, width: 32, height: 32, speed: 3 },
+  camera: { x: 0, y: 0, scale: 1, viewportWidth: mapWidth, viewportHeight: mapHeight },
   maxLives: 3,
   lives: 3,
   currentZone: "Входна зала",
@@ -256,6 +257,7 @@ const mapState = {
   completedBonuses: [],
   virusEscapeCompleted: false,
   mobileControlsForced: false,
+  hudCollapsed: false,
   doorBonusDone: false,
   doorMessageCooldown: false,
   virusCooldown: false,
@@ -306,6 +308,7 @@ function cacheElements() {
   ui.homeError = document.getElementById("home-error");
   ui.soundToggle = document.getElementById("sound-toggle");
   ui.mobileControlsToggle = document.getElementById("mobile-controls-toggle");
+  ui.hudToggleBtn = document.getElementById("hud-toggle-btn");
   ui.eventModeBtn = document.getElementById("event-mode-btn");
   ui.startBtn = document.getElementById("start-btn");
   ui.beginMapBtn = document.getElementById("begin-map-btn");
@@ -374,6 +377,7 @@ function bindEvents() {
   ui.adminBtn.addEventListener("click", requestAdminClear);
   ui.soundToggle.addEventListener("click", toggleSound);
   ui.mobileControlsToggle.addEventListener("click", toggleMobileControls);
+  ui.hudToggleBtn.addEventListener("click", toggleHudPanel);
   ui.eventModeBtn.addEventListener("click", toggleEventMode);
   ui.playerNameInput.addEventListener("input", handleNameInput);
   ui.playerNameInput.addEventListener("keydown", (event) => {
@@ -438,13 +442,28 @@ function isMobileMapMode() {
   return ui.body?.classList.contains("mobile-map-mode");
 }
 
+function setHudCollapsed(collapsed) {
+  mapState.hudCollapsed = Boolean(collapsed);
+  ui.body.classList.toggle("hud-collapsed", mapState.hudCollapsed);
+  ui.hudToggleBtn.textContent = mapState.hudCollapsed ? "Покажи" : "Скрий";
+  ui.hudToggleBtn.setAttribute("aria-expanded", String(!mapState.hudCollapsed));
+  scheduleMapResize();
+}
+
+function toggleHudPanel() {
+  setHudCollapsed(!mapState.hudCollapsed);
+  playSound("click");
+}
+
 async function activateMobileMapMode() {
   if (!isTouchDevice()) {
+    setHudCollapsed(false);
     scheduleMapResize();
     return;
   }
 
   ui.body.classList.add("mobile-map-mode");
+  setHudCollapsed(true);
   syncMobileControlsVisibility();
   scheduleMapResize();
   showToast("Завърти телефона хоризонтално за по-удобна игра.", "helper");
@@ -469,6 +488,7 @@ async function activateMobileMapMode() {
 function deactivateMobileMapMode() {
   if (!ui.body?.classList.contains("mobile-map-mode")) return;
   ui.body.classList.remove("mobile-map-mode");
+  setHudCollapsed(false);
   syncMobileControlsVisibility();
   try {
     screen.orientation?.unlock?.();
@@ -487,21 +507,62 @@ function resizeMapViewport() {
   const rect = panel?.getBoundingClientRect();
   const mobileMode = isMobileMapMode();
   const landscapeMode = window.matchMedia("(orientation: landscape)").matches;
-  const hudHeight = mobileMode ? (document.querySelector(".map-hud")?.getBoundingClientRect().height || 0) : 0;
+  const hudHeight = mobileMode && !mapState.hudCollapsed ? (document.querySelector(".map-hud")?.getBoundingClientRect().height || 0) : 0;
   const controlsHeight = mobileMode ? (landscapeMode ? 8 : 90) : 0;
   const availableWidth = Math.max(280, (rect?.width || window.innerWidth || mapWidth) - (mobileMode ? 12 : 32));
   const availableHeight = mobileMode
     ? Math.max(220, window.innerHeight - hudHeight - controlsHeight - 18)
     : Math.max(260, rect?.height || mapHeight);
+
+  if (mobileMode) {
+    const scale = landscapeMode ? (availableHeight < 360 ? 1.55 : 1.95) : 1.45;
+    const viewportWidth = Math.min(availableWidth, landscapeMode ? 820 : availableWidth);
+    const viewportHeight = Math.min(availableHeight, landscapeMode ? 460 : availableHeight);
+    mapState.camera.scale = scale;
+    mapState.camera.viewportWidth = viewportWidth;
+    mapState.camera.viewportHeight = viewportHeight;
+    ui.mapViewport.style.width = `${viewportWidth}px`;
+    ui.mapViewport.style.height = `${viewportHeight}px`;
+    updateCamera();
+    return;
+  }
+
   const scale = Math.min(1, availableWidth / mapWidth, availableHeight / mapHeight);
+  mapState.camera.scale = scale;
+  mapState.camera.viewportWidth = mapWidth * scale;
+  mapState.camera.viewportHeight = mapHeight * scale;
+  mapState.camera.x = 0;
+  mapState.camera.y = 0;
   ui.mapViewport.style.width = `${mapWidth * scale}px`;
-  ui.academyMap.style.transform = `scale(${scale})`;
   ui.mapViewport.style.height = `${mapHeight * scale}px`;
+  applyCameraTransform();
 }
 
 function scheduleMapResize() {
   resizeMapViewport();
   window.requestAnimationFrame(resizeMapViewport);
+}
+
+function updateCamera() {
+  if (!isMobileMapMode()) {
+    applyCameraTransform();
+    return;
+  }
+
+  const { scale, viewportWidth, viewportHeight } = mapState.camera;
+  const visibleWidth = viewportWidth / scale;
+  const visibleHeight = viewportHeight / scale;
+  const playerCenterX = mapState.player.x + mapState.player.width / 2;
+  const playerCenterY = mapState.player.y + mapState.player.height / 2;
+
+  mapState.camera.x = clamp(playerCenterX - visibleWidth / 2, 0, Math.max(0, mapWidth - visibleWidth));
+  mapState.camera.y = clamp(playerCenterY - visibleHeight / 2, 0, Math.max(0, mapHeight - visibleHeight));
+  applyCameraTransform();
+}
+
+function applyCameraTransform() {
+  const { x, y, scale } = mapState.camera;
+  ui.academyMap.style.transform = `matrix(${scale}, 0, 0, ${scale}, ${-x * scale}, ${-y * scale})`;
 }
 
 function handleRouteChange() {
@@ -598,6 +659,7 @@ function resetGameState() {
   mapState.completedMissions = [];
   mapState.collectedKeys = 0;
   mapState.completedBonuses = [];
+  mapState.hudCollapsed = false;
   mapState.virusEscapeCompleted = false;
   mapState.doorBonusDone = false;
   mapState.doorMessageCooldown = false;
@@ -1531,6 +1593,7 @@ function isDoorUnlocked(door) {
 function renderMapState() {
   ui.playerAvatar.style.left = `${mapState.player.x}px`;
   ui.playerAvatar.style.top = `${mapState.player.y}px`;
+  updateCamera();
 
   hazards.forEach((hazard) => {
     const element = ui.mapLayers.querySelector(`[data-id="${hazard.id}"]`);
