@@ -92,6 +92,7 @@ const topLabels = ["Главен защитник", "Мрежов герой", "
 const SCORE_CONFIG = {
   correctMission: 100,
   wrongMission: 0,
+  repeatedWrongPenalty: 50,
   keyBonus: 10,
   infectedFileCorrect: 50,
   infectedFileWrong: 0,
@@ -233,6 +234,8 @@ const gameState = {
   selectedCable: "",
   cablePairs: [],
   switchStates: {},
+  missionWrongAttempts: {},
+  bonusWrongAttempts: {},
   timerIntervalId: null,
   hasSavedResult: false,
   hasCreatedRewardClaim: false,
@@ -760,6 +763,8 @@ function resetGameState() {
   gameState.selectedCable = "";
   gameState.cablePairs = [];
   gameState.switchStates = {};
+  gameState.missionWrongAttempts = {};
+  gameState.bonusWrongAttempts = {};
   gameState.hasSavedResult = false;
   gameState.hasCreatedRewardClaim = false;
   gameState.finalResult = null;
@@ -1696,8 +1701,10 @@ function handleBonusResult(id, isCorrect, earnedPoints, explanation) {
   }
 
   if (!isCorrect) {
-    showFeedback(false, 0, explanation, "Не е вярно, но няма наказание. Прочети подсказката и опитай отново.");
+    const penalty = registerWrongAttempt(gameState.bonusWrongAttempts, id);
+    showFeedback(false, -penalty, explanation, getWrongAttemptNote(penalty));
     ui.continueMapBtn.hidden = true;
+    updateHud();
     playSound("wrong");
     return false;
   }
@@ -1729,7 +1736,8 @@ function handleMissionResult(isCorrect, selectedData) {
 
   const mission = missions[gameState.currentMissionIndex];
   if (!isCorrect) {
-    showFeedback(false, SCORE_CONFIG.wrongMission, mission.wrongExplanation, "Не е вярно, но няма наказание. Прочети подсказката и опитай отново.");
+    const penalty = registerWrongAttempt(gameState.missionWrongAttempts, gameState.currentMissionIndex);
+    showFeedback(false, -penalty, mission.wrongExplanation, getWrongAttemptNote(penalty));
     ui.continueMapBtn.hidden = true;
     updateHud();
     playSound("wrong");
@@ -1759,9 +1767,31 @@ function handleMissionResult(isCorrect, selectedData) {
 function showFeedback(isCorrect, earnedPoints, explanation, note) {
   ui.feedbackPanel.hidden = false;
   ui.feedbackPanel.className = `feedback-panel ${isCorrect ? "correct" : "incorrect"}`;
-  ui.feedbackBadge.textContent = isCorrect ? `Успех! +${earnedPoints} точки` : "Опитай отново";
+  ui.feedbackBadge.textContent = isCorrect
+    ? `Успех! +${earnedPoints} точки`
+    : earnedPoints < 0 ? `Опитай отново. ${earnedPoints} точки` : "Опитай отново";
   ui.feedbackText.textContent = explanation;
   ui.feedbackNote.textContent = note;
+}
+
+function registerWrongAttempt(attemptsByQuestion, key) {
+  const nextAttempts = (attemptsByQuestion[key] || 0) + 1;
+  attemptsByQuestion[key] = nextAttempts;
+
+  if (nextAttempts < 2) {
+    return 0;
+  }
+
+  gameState.score = Math.max(0, gameState.score - SCORE_CONFIG.repeatedWrongPenalty);
+  return SCORE_CONFIG.repeatedWrongPenalty;
+}
+
+function getWrongAttemptNote(penalty) {
+  if (penalty > 0) {
+    return `Това е повторен грешен опит по този въпрос. Отнемат се ${penalty} точки, но можеш да опиташ отново.`;
+  }
+
+  return "Не е вярно. Първият грешен опит е без наказание - прочети подсказката и опитай отново.";
 }
 
 function lockChoiceButtons(selector, selectedValue, correctValue) {

@@ -22,14 +22,9 @@ const SCORE_CONFIG = {
   maxScore: 760
 };
 const REWARD_CONFIG = {
-  minScore: 700,
   missionCount: 5,
   rewardLabel: "Физическа награда",
   eligibleTitles: [
-    "Дигитален защитник",
-    "Кибер герой",
-    "Пазител на сървъра",
-    "Майстор на Кибер Академията",
     "Млад кибергерой",
     "Бъдещ IT специалист"
   ]
@@ -149,14 +144,6 @@ function validateRewardPayload(payload) {
 }
 
 function calculateRewardEligibility(score, title, completedMissions, gameWon) {
-  if (score >= REWARD_CONFIG.minScore) {
-    return {
-      eligible: true,
-      reason: `Ученикът е постигнал резултат ${score} точки, което е над прага ${REWARD_CONFIG.minScore}.`,
-      rewardLabel: REWARD_CONFIG.rewardLabel
-    };
-  }
-
   if (REWARD_CONFIG.eligibleTitles.includes(title)) {
     return {
       eligible: true,
@@ -165,25 +152,9 @@ function calculateRewardEligibility(score, title, completedMissions, gameWon) {
     };
   }
 
-  if (completedMissions >= REWARD_CONFIG.missionCount) {
-    return {
-      eligible: true,
-      reason: "Ученикът е изпълнил всички основни мисии.",
-      rewardLabel: REWARD_CONFIG.rewardLabel
-    };
-  }
-
-  if (gameWon) {
-    return {
-      eligible: true,
-      reason: "Ученикът е достигнал финала на играта.",
-      rewardLabel: REWARD_CONFIG.rewardLabel
-    };
-  }
-
   return {
     eligible: false,
-    reason: "Участникът няма право на физическа награда според зададените критерии.",
+    reason: "Участникът няма право на физическа награда, защото не е достигнал титла „Млад кибергерой“ или „Бъдещ IT специалист“.",
     rewardLabel: REWARD_CONFIG.rewardLabel
   };
 }
