@@ -1953,7 +1953,6 @@ function finishGame(options = {}) {
     playSound("success");
   } else {
     playSound("wrong");
-    setMessage(ui.saveStatus, "Този опит приключи при 0 живота и не се записва като провал в класацията.", "helper");
   }
   persistFinalResult();
 }
@@ -2036,10 +2035,7 @@ function renderResult() {
 async function persistFinalResult() {
   if (!gameState.finalResult) return;
 
-  if (!gameState.finalResult.defeated) {
-    await saveScore();
-  }
-
+  await saveScore();
   await createRewardClaim();
 }
 
