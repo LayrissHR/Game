@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Скенер за QR кодове</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #050816;
+      --panel: rgba(12, 21, 45, 0.94);
+      --line: rgba(102, 217, 255, 0.28);
+      --text: #f3fbff;
+      --muted: #9cb5d9;
+      --green: #5df7c5;
+      --danger: #ff6ca8;
+      --warning: #ffc96c;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100dvh;
+      font-family: Verdana, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(47, 184, 255, 0.2), transparent 34%),
+        linear-gradient(180deg, #030510, #071024 62%, #040811);
+    }
+
+    main {
+      width: min(760px, 100%);
+      min-height: 100dvh;
+      margin: 0 auto;
+      padding: 18px;
+      display: grid;
+      align-content: center;
+      gap: 16px;
+    }
+
+    .scanner-card {
+      padding: clamp(18px, 5vw, 34px);
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(12, 21, 45, 0.96), rgba(9, 15, 33, 0.88));
+      border: 1px solid var(--line);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: #9bfbe6;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.82rem;
+      font-weight: 800;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(1.8rem, 7vw, 3rem);
+      line-height: 1.05;
+    }
+
+    .muted {
+      margin: 0 0 18px;
+      color: #d3e6ff;
+      line-height: 1.55;
+    }
+
+    .camera-shell {
+      position: relative;
+      overflow: hidden;
+      border-radius: 16px;
+      border: 1px solid rgba(146, 215, 255, 0.24);
+      background: rgba(2, 8, 20, 0.72);
+      aspect-ratio: 1;
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      background: #020814;
+    }
+
+    .scan-frame {
+      position: absolute;
+      inset: 14%;
+      border: 3px solid rgba(93, 247, 197, 0.88);
+      border-radius: 18px;
+      box-shadow: 0 0 0 999px rgba(0, 0, 0, 0.32);
+      pointer-events: none;
+    }
+
+    .status {
+      margin: 14px 0;
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(146, 215, 255, 0.16);
+      color: #d3e6ff;
+      font-weight: 800;
+      line-height: 1.45;
+    }
+
+    .status.error {
+      color: #ffd4e5;
+      background: rgba(255, 108, 168, 0.16);
+      border-color: rgba(255, 108, 168, 0.34);
+    }
+
+    .status.success {
+      color: #dffff6;
+      background: rgba(93, 247, 197, 0.14);
+      border-color: rgba(93, 247, 197, 0.34);
+    }
+
+    .actions,
+    .manual-form {
+      display: grid;
+      gap: 12px;
+    }
+
+    .actions {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-bottom: 16px;
+    }
+
+    button,
+    input {
+      width: 100%;
+      min-height: 54px;
+      border-radius: 12px;
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      color: #04150f;
+      background: linear-gradient(135deg, rgba(47, 184, 255, 0.96), rgba(93, 247, 197, 0.92));
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(146, 215, 255, 0.24);
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+
+    label {
+      color: #d3e6ff;
+      font-weight: 800;
+    }
+
+    input {
+      padding: 14px 16px;
+      border: 1px solid rgba(146, 215, 255, 0.28);
+      background: rgba(7, 17, 36, 0.92);
+      color: var(--text);
+      text-transform: uppercase;
+    }
+
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    a {
+      color: #9bfbe6;
+      font-weight: 800;
+    }
+
+    canvas {
+      display: none;
+    }
+
+    @media (max-width: 560px) {
+      main {
+        align-content: start;
+      }
+
+      .actions {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="scanner-card">
+      <p class="eyebrow">Кибер Академия</p>
+      <h1>Скенер за QR кодове</h1>
+      <p class="muted">Насочи камерата към QR кода от финалния екран на участника.</p>
+
+      <div class="camera-shell">
+        <video id="camera" playsinline muted></video>
+        <div class="scan-frame" aria-hidden="true"></div>
+      </div>
+
+      <p id="scanner-status" class="status" aria-live="polite">Готово за сканиране.</p>
+
+      <div class="actions">
+        <button id="start-camera" type="button">Стартирай камерата</button>
+        <button id="stop-camera" class="secondary" type="button" disabled>Спри камерата</button>
+      </div>
+
+      <form id="manual-form" class="manual-form">
+        <label for="manual-code">Ръчно въвеждане на код</label>
+        <input id="manual-code" name="manual-code" type="text" autocomplete="off" placeholder="KA-2026-ABCD-1234" />
+        <button class="secondary" type="submit">Отвори проверката</button>
+      </form>
+
+      <div class="links">
+        <a href="/">Към играта</a>
+        <a href="/leaderboard">Към класацията</a>
+      </div>
+    </section>
+  </main>
+
+  <canvas id="scan-canvas"></canvas>
+  <script src="/vendor/jsQR.js"></script>
+  <script>
+    const video = document.getElementById("camera");
+    const canvas = document.getElementById("scan-canvas");
+    const statusElement = document.getElementById("scanner-status");
+    const startButton = document.getElementById("start-camera");
+    const stopButton = document.getElementById("stop-camera");
+    const manualForm = document.getElementById("manual-form");
+    const manualInput = document.getElementById("manual-code");
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+
+    let stream = null;
+    let animationFrameId = null;
+    let isRedirecting = false;
+
+    function setStatus(text, type = "") {
+      statusElement.textContent = text;
+      statusElement.className = type ? `status ${type}` : "status";
+    }
+
+    function extractClaimCode(value) {
+      const rawValue = String(value || "").trim();
+      if (!rawValue) return "";
+
+      try {
+        const url = new URL(rawValue, window.location.origin);
+        const match = url.pathname.match(/\/admin\/verify\/([^/]+)/i);
+        if (match) return decodeURIComponent(match[1]);
+      } catch (error) {
+        return "";
+      }
+
+      return rawValue
+        .toUpperCase()
+        .replace(/[^A-Z0-9-]/g, "")
+        .slice(0, 32);
+    }
+
+    function openClaim(rawValue) {
+      if (isRedirecting) return;
+      const claimCode = extractClaimCode(rawValue);
+
+      if (!claimCode) {
+        setStatus("Кодът не беше разпознат.", "error");
+        return;
+      }
+
+      isRedirecting = true;
+      stopCamera();
+      setStatus("Кодът е разпознат. Отваряне на проверката...", "success");
+      window.location.href = `/admin/verify/${encodeURIComponent(claimCode)}`;
+    }
+
+    async function startCamera() {
+      if (stream) return;
+
+      if (!navigator.mediaDevices?.getUserMedia) {
+        setStatus("Този браузър не позволява достъп до камерата. Въведи кода ръчно.", "error");
+        return;
+      }
+
+      try {
+        setStatus("Стартиране на камерата...");
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: { ideal: "environment" },
+            width: { ideal: 1280 },
+            height: { ideal: 1280 }
+          },
+          audio: false
+        });
+        video.srcObject = stream;
+        await video.play();
+        startButton.disabled = true;
+        stopButton.disabled = false;
+        setStatus("Сканиране...");
+        scanFrame();
+      } catch (error) {
+        stream = null;
+        setStatus("Камерата не може да се стартира. Разреши достъпа или въведи кода ръчно.", "error");
+      }
+    }
+
+    function stopCamera() {
+      if (animationFrameId) {
+        window.cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
+
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+        stream = null;
+      }
+
+      video.srcObject = null;
+      startButton.disabled = false;
+      stopButton.disabled = true;
+    }
+
+    function scanFrame() {
+      if (!stream || isRedirecting) return;
+
+      if (video.readyState === video.HAVE_ENOUGH_DATA && video.videoWidth && video.videoHeight) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+        const qrCode = window.jsQR?.(imageData.data, imageData.width, imageData.height, {
+          inversionAttempts: "attemptBoth"
+        });
+
+        if (qrCode?.data) {
+          openClaim(qrCode.data);
+          return;
+        }
+      }
+
+      animationFrameId = window.requestAnimationFrame(scanFrame);
+    }
+
+    startButton.addEventListener("click", startCamera);
+    stopButton.addEventListener("click", () => {
+      stopCamera();
+      setStatus("Сканирането е спряно.");
+    });
+
+    manualForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      openClaim(manualInput.value);
+    });
+
+    window.addEventListener("pagehide", stopCamera);
+  </script>
+</body>
+</html>

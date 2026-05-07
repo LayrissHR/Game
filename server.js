@@ -30,6 +30,7 @@ const REWARD_CONFIG = {
   ]
 };
 const publicDirectory = path.join(__dirname, "public");
+const jsQrScriptPath = path.join(__dirname, "node_modules", "jsqr", "dist", "jsQR.js");
 
 const allowedTitles = new Set([
   "Начинаещ изследовател",
@@ -341,6 +342,14 @@ app.get("/", (request, response) => {
 
 app.get("/leaderboard", (request, response) => {
   response.sendFile(path.join(publicDirectory, "index.html"));
+});
+
+app.get("/admin/scanner", (request, response) => {
+  response.sendFile(path.join(publicDirectory, "admin-scanner.html"));
+});
+
+app.get("/vendor/jsQR.js", (request, response) => {
+  response.sendFile(jsQrScriptPath);
 });
 
 app.get("/api/scores", async (request, response, next) => {
