@@ -127,6 +127,10 @@ app.post("/api/scores", async (request, response, next) => {
       }
     });
   } catch (error) {
+    console.error("[api/scores] Неуспешен запис на резултат.", {
+      code: error.code,
+      message: error.message
+    });
     next(error);
   }
 });
@@ -158,8 +162,13 @@ app.use((error, request, response, next) => {
     return;
   }
 
-  console.error("Server error:", error);
-  response.status(500).json({ error: "Възникна сървърна грешка. Моля, опитайте отново." });
+  console.error("[server] Необработена грешка.", {
+    method: request.method,
+    path: request.path,
+    code: error.code,
+    message: error.message
+  });
+  response.status(500).json({ error: "Сървърът не успя да обработи заявката. Проверете логовете на приложението." });
 });
 
 initDatabase()
@@ -170,6 +179,10 @@ initDatabase()
     });
   })
   .catch((error) => {
-    console.error("Неуспешно стартиране на приложението:", error);
+    console.error("Неуспешно стартиране на приложението. Проверете DATABASE_PATH и правата за запис.", {
+      databasePath,
+      code: error.code,
+      message: error.message
+    });
     process.exit(1);
   });

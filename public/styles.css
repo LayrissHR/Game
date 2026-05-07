@@ -88,15 +88,20 @@ button {
 }
 
 .utility-bar {
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  justify-content: stretch;
   min-width: 0;
 }
 
 .utility-actions {
+  grid-column: 3;
   justify-content: flex-end;
 }
 
 .brand-chip {
+  grid-column: 2;
+  justify-self: center;
   padding: 10px 16px;
   border-radius: 999px;
   background: rgba(8, 22, 46, 0.82);
@@ -390,6 +395,28 @@ button {
 .instruction-item span {
   color: #d3e6ff;
   line-height: 1.45;
+}
+
+.win-guide,
+.defeat-tips {
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(93, 247, 197, 0.18);
+}
+
+.win-guide h3,
+.defeat-tips h3 {
+  margin: 0 0 10px;
+  font-size: 1rem;
+}
+
+.win-guide ul,
+.defeat-tips ul {
+  margin: 0;
+  padding-left: 20px;
+  color: #d3e6ff;
+  line-height: 1.55;
 }
 
 .mobile-instruction {
@@ -1519,16 +1546,59 @@ button {
   max-height: calc(100dvh - 20px);
 }
 
-.dpad {
-  width: 168px;
-  height: 168px;
-  display: grid;
-  grid-template-columns: repeat(3, 56px);
-  grid-template-rows: repeat(3, 56px);
+.joystick-pad {
+  position: relative;
+  width: 154px;
+  height: 154px;
+  border-radius: 50%;
+  border: 1px solid rgba(146, 215, 255, 0.32);
+  background:
+    radial-gradient(circle at 50% 50%, rgba(93, 247, 197, 0.16), transparent 34%),
+    rgba(8, 19, 42, 0.7);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-.dpad-button,
+.joystick-pad::before,
+.joystick-pad::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 72%;
+  height: 1px;
+  background: rgba(211, 230, 255, 0.18);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.joystick-pad::after {
+  width: 1px;
+  height: 72%;
+}
+
+.joystick-knob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  border: 1px solid rgba(234, 255, 255, 0.44);
+  background: linear-gradient(135deg, rgba(47, 184, 255, 0.96), rgba(93, 247, 197, 0.9));
+  box-shadow: 0 12px 26px rgba(47, 184, 255, 0.28), inset 0 2px 0 rgba(255, 255, 255, 0.24);
+  transform: translate(-50%, -50%);
+  transition: transform 0.08s ease-out;
+  pointer-events: none;
+}
+
+.joystick-pad:active .joystick-knob {
+  transition: none;
+}
+
 .action-button {
   border-radius: 16px;
   border: 1px solid rgba(146, 215, 255, 0.35);
@@ -1538,17 +1608,12 @@ button {
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.08);
   touch-action: none;
   user-select: none;
+  -webkit-user-select: none;
 }
 
-.dpad-button:active,
 .action-button:active {
   background: rgba(47, 184, 255, 0.56);
 }
-
-.dpad-up { grid-column: 2; grid-row: 1; }
-.dpad-left { grid-column: 1; grid-row: 2; }
-.dpad-right { grid-column: 3; grid-row: 2; }
-.dpad-down { grid-column: 2; grid-row: 3; }
 
 .action-button {
   min-width: 118px;
@@ -1699,10 +1764,19 @@ button {
     padding: var(--page-pad);
   }
 
-  .utility-bar,
   .leaderboard-header {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .utility-bar {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .brand-chip,
+  .utility-actions {
+    grid-column: 1;
   }
 
   .utility-actions,
@@ -1770,11 +1844,14 @@ button {
     min-width: 118px;
   }
 
-  .dpad {
-    width: 144px;
-    height: 144px;
-    grid-template-columns: repeat(3, 48px);
-    grid-template-rows: repeat(3, 48px);
+  .joystick-pad {
+    width: 138px;
+    height: 138px;
+  }
+
+  .joystick-knob {
+    width: 60px;
+    height: 60px;
   }
 
   .action-button {
@@ -1863,7 +1940,7 @@ button {
     bottom: 8px;
   }
 
-  .dpad {
+  .joystick-pad {
     transform: scale(0.86);
     transform-origin: bottom left;
   }

@@ -91,17 +91,19 @@ const titleBadgeClasses = {
 const topLabels = ["Главен защитник", "Мрежов герой", "Кибер помощник"];
 const SCORE_CONFIG = {
   correctMission: 100,
-  wrongMission: 20,
+  wrongMission: 0,
   keyBonus: 10,
   infectedFileCorrect: 50,
-  infectedFileWrong: 10,
+  infectedFileWrong: 0,
   powerPanelCorrect: 40,
-  powerPanelWrong: 10,
+  powerPanelWrong: 0,
   cablePuzzleCorrect: 50,
-  cablePuzzleWrong: 10,
+  cablePuzzleWrong: 0,
   virusPenalty: 10,
   maxScore: 760
 };
+const MODAL_INPUT_LOCK_MS = 500;
+const JOYSTICK_DEAD_ZONE = 10;
 const mapWidth = 900;
 const mapHeight = 520;
 const controls = {
@@ -271,6 +273,8 @@ const mapState = {
 
 const ui = {};
 let audioContext = null;
+let modalInputLockedUntil = 0;
+let activeJoystickPointerId = null;
 
 document.addEventListener("DOMContentLoaded", init);
 window.addEventListener("popstate", handleRouteChange);
@@ -361,7 +365,10 @@ function cacheElements() {
   ui.refreshLeaderboardBtn = document.getElementById("refresh-leaderboard-btn");
   ui.adminBtn = document.getElementById("admin-btn");
   ui.mobileControls = document.getElementById("mobile-controls");
+  ui.joystickPad = ui.mobileControls?.querySelector(".joystick-pad");
+  ui.joystickKnob = ui.mobileControls?.querySelector(".joystick-knob");
   ui.mobileActionBtn = document.getElementById("mobile-action-btn");
+  ui.defeatTips = document.getElementById("defeat-tips");
 }
 
 function bindEvents() {
@@ -394,30 +401,121 @@ function bindEvents() {
 }
 
 function bindMobileControls() {
-  Array.from(ui.mobileControls.querySelectorAll("[data-direction]")).forEach((button) => {
-    const direction = button.dataset.direction;
-    button.addEventListener("pointerdown", (event) => {
+  if (ui.joystickPad) {
+    ui.joystickPad.addEventListener("pointerdown", (event) => {
       event.preventDefault();
-      if (canProcessGameControls()) {
-        inputState[direction] = true;
+      event.stopPropagation();
+      if (!canProcessGameControls()) {
+        clearMovementInput();
+        resetJoystickKnob();
+        return;
       }
-      button.setPointerCapture?.(event.pointerId);
+      activeJoystickPointerId = event.pointerId;
+      capturePointer(ui.joystickPad, event);
+      updateJoystickFromPointer(event);
     });
-    const stop = (event) => {
+
+    ui.joystickPad.addEventListener("pointermove", (event) => {
+      if (event.pointerId !== activeJoystickPointerId) return;
       event.preventDefault();
-      inputState[direction] = false;
+      event.stopPropagation();
+      if (!canProcessGameControls()) {
+        clearMovementInput();
+        resetJoystickKnob();
+        return;
+      }
+      updateJoystickFromPointer(event);
+    });
+
+    const stopJoystick = (event) => {
+      if (event.pointerId !== activeJoystickPointerId) return;
+      event.preventDefault();
+      event.stopPropagation();
+      activeJoystickPointerId = null;
+      clearMovementInput();
+      resetJoystickKnob();
     };
-    button.addEventListener("pointerup", stop);
-    button.addEventListener("pointercancel", stop);
-    button.addEventListener("pointerleave", stop);
-  });
+
+    ui.joystickPad.addEventListener("pointerup", stopJoystick);
+    ui.joystickPad.addEventListener("pointercancel", stopJoystick);
+    ui.joystickPad.addEventListener("lostpointercapture", () => {
+      activeJoystickPointerId = null;
+      clearMovementInput();
+      resetJoystickKnob();
+    });
+  }
 
   ui.mobileActionBtn.addEventListener("pointerdown", (event) => {
     event.preventDefault();
+    event.stopPropagation();
+    clearMovementInput();
+    resetJoystickKnob();
+    capturePointer(ui.mobileActionBtn, event);
+  });
+
+  ui.mobileActionBtn.addEventListener("pointerup", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    clearMovementInput();
+    resetJoystickKnob();
     if (canProcessGameControls()) {
       tryInteraction();
     }
   });
+
+  ui.mobileActionBtn.addEventListener("pointercancel", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    clearMovementInput();
+    resetJoystickKnob();
+  });
+
+  ui.mobileActionBtn.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+  });
+}
+
+function updateJoystickFromPointer(event) {
+  if (!ui.joystickPad || !ui.joystickKnob) return;
+  const rect = ui.joystickPad.getBoundingClientRect();
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height / 2;
+  const maxDistance = Math.max(24, rect.width / 2 - ui.joystickKnob.offsetWidth / 2);
+  const dx = event.clientX - centerX;
+  const dy = event.clientY - centerY;
+  const distance = Math.hypot(dx, dy);
+  const limitedDistance = Math.min(distance, maxDistance);
+  const angle = Math.atan2(dy, dx);
+  const knobX = distance > 0 ? Math.cos(angle) * limitedDistance : 0;
+  const knobY = distance > 0 ? Math.sin(angle) * limitedDistance : 0;
+
+  ui.joystickKnob.style.transform = `translate(calc(-50% + ${knobX}px), calc(-50% + ${knobY}px))`;
+
+  if (distance < JOYSTICK_DEAD_ZONE) {
+    clearMovementInput();
+    return;
+  }
+
+  const threshold = Math.max(JOYSTICK_DEAD_ZONE, maxDistance * 0.28);
+  inputState.left = dx < -threshold;
+  inputState.right = dx > threshold;
+  inputState.up = dy < -threshold;
+  inputState.down = dy > threshold;
+}
+
+function resetJoystickKnob() {
+  if (ui.joystickKnob) {
+    ui.joystickKnob.style.transform = "translate(-50%, -50%)";
+  }
+}
+
+function capturePointer(element, event) {
+  try {
+    element?.setPointerCapture?.(event.pointerId);
+  } catch (error) {
+    // Synthetic browser tests and a few older mobile browsers may not expose an active pointer capture.
+  }
 }
 
 function toggleMobileControls() {
@@ -741,6 +839,7 @@ function handleKeyDown(event) {
 
   if (event.code === "KeyE") {
     event.preventDefault();
+    if (event.repeat) return;
     tryInteraction();
   }
 }
@@ -761,6 +860,7 @@ function clearMovementInput() {
   inputState.down = false;
   inputState.left = false;
   inputState.right = false;
+  resetJoystickKnob();
 }
 
 function startGameLoop() {
@@ -1141,9 +1241,11 @@ function activateMapObject(item) {
 function openMissionModal(index) {
   const mission = missions[index];
   clearMovementInput();
+  lockModalInput();
   mapState.isMissionOpen = true;
   mapState.openModalKind = "mission";
   ui.body.classList.add("modal-open");
+  gameState.currentMissionIndex = index;
   gameState.selectedOrder = [];
   gameState.switchStates = {};
   ui.missionKicker.textContent = `Мисия ${index + 1} от ${missions.length}`;
@@ -1161,6 +1263,7 @@ function openMissionModal(index) {
 
 function openBonusModal(item) {
   clearMovementInput();
+  lockModalInput();
   mapState.isMissionOpen = true;
   mapState.openModalKind = "bonus";
   ui.body.classList.add("modal-open");
@@ -1190,6 +1293,7 @@ function openBonusModal(item) {
 
 function closeMissionModal() {
   ui.missionModal.hidden = true;
+  modalInputLockedUntil = 0;
   resetMissionModalScroll();
   mapState.isMissionOpen = false;
   ui.body.classList.remove("modal-open");
@@ -1220,6 +1324,19 @@ function resetMissionModalScroll() {
   });
 }
 
+function lockModalInput(duration = MODAL_INPUT_LOCK_MS) {
+  modalInputLockedUntil = Date.now() + duration;
+}
+
+function canAcceptModalChoice(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  return mapState.isMissionOpen && Date.now() >= modalInputLockedUntil;
+}
+
 function renderInteraction(mission) {
   if (mission.type === "access-card") renderAccessCardMission(mission);
   if (mission.type === "email-detective") renderEmailDetectiveMission(mission);
@@ -1237,9 +1354,12 @@ function renderAccessCardMission(mission) {
     button.className = "access-card";
     button.dataset.value = option;
     button.innerHTML = `<span class="access-card__chip"></span><strong>${option}</strong><small>Дигитален пропуск</small>`;
-    button.addEventListener("click", () => {
-      handleMissionResult(option === mission.correctAnswer, { selected: option });
-      lockChoiceButtons(".access-card", option, mission.correctAnswer);
+    button.addEventListener("click", (event) => {
+      if (!canAcceptModalChoice(event)) return;
+      const isCorrect = option === mission.correctAnswer;
+      if (handleMissionResult(isCorrect, { selected: option })) {
+        lockChoiceButtons(".access-card", option, mission.correctAnswer);
+      }
     });
     grid.append(button);
   });
@@ -1255,9 +1375,12 @@ function renderEmailDetectiveMission(mission) {
     button.className = "email-card";
     button.dataset.value = email.id;
     button.innerHTML = `<span class="email-card__from">От: ${email.from}</span><strong>${email.subject}</strong><span>${email.body}</span>`;
-    button.addEventListener("click", () => {
-      handleMissionResult(email.id === mission.correctEmailId, { selected: email.id });
-      lockChoiceButtons(".email-card", email.id, mission.correctEmailId);
+    button.addEventListener("click", (event) => {
+      if (!canAcceptModalChoice(event)) return;
+      const isCorrect = email.id === mission.correctEmailId;
+      if (handleMissionResult(isCorrect, { selected: email.id })) {
+        lockChoiceButtons(".email-card", email.id, mission.correctEmailId);
+      }
     });
     grid.append(button);
   });
@@ -1284,7 +1407,8 @@ function renderNetworkOrderMission(mission) {
     button.className = "network-device";
     button.disabled = gameState.selectedOrder.includes(item);
     button.innerHTML = `<span class="device-icon">${getDeviceIcon(item)}</span><strong>${item}</strong>`;
-    button.addEventListener("click", () => {
+    button.addEventListener("click", (event) => {
+      if (!canAcceptModalChoice(event)) return;
       if (gameState.selectedOrder.length >= mission.correctOrder.length) return;
       gameState.selectedOrder.push(item);
       renderNetworkOrderMission(mission);
@@ -1300,13 +1424,16 @@ function renderNetworkOrderMission(mission) {
   confirmButton.className = "button button-primary";
   confirmButton.textContent = "Потвърди връзката";
   confirmButton.disabled = gameState.selectedOrder.length !== mission.correctOrder.length;
-  confirmButton.addEventListener("click", () => {
+  confirmButton.addEventListener("click", (event) => {
+    if (!canAcceptModalChoice(event)) return;
     const isCorrect = mission.correctOrder.every((item, index) => gameState.selectedOrder[index] === item);
-    handleMissionResult(isCorrect, { selectedOrder: [...gameState.selectedOrder] });
-    Array.from(ui.interactionArea.querySelectorAll("button")).forEach((button) => {
-      button.disabled = true;
-      button.classList.add("is-locked");
-    });
+    const completed = handleMissionResult(isCorrect, { selectedOrder: [...gameState.selectedOrder] });
+    if (completed) {
+      Array.from(ui.interactionArea.querySelectorAll("button")).forEach((button) => {
+        button.disabled = true;
+        button.classList.add("is-locked");
+      });
+    }
     markNetworkSlots(mission);
   });
 
@@ -1314,7 +1441,8 @@ function renderNetworkOrderMission(mission) {
   clearButton.type = "button";
   clearButton.className = "button button-secondary";
   clearButton.textContent = "Изчисти връзката";
-  clearButton.addEventListener("click", () => {
+  clearButton.addEventListener("click", (event) => {
+    if (!canAcceptModalChoice(event)) return;
     gameState.selectedOrder = [];
     renderNetworkOrderMission(mission);
     playSound("click");
@@ -1343,7 +1471,8 @@ function renderSwitchesMission(mission) {
     button.type = "button";
     button.className = `switch-control ${gameState.switchStates[item.id] ? "on" : ""}`;
     button.innerHTML = `<span class="switch-track"><span class="switch-thumb"></span></span><strong>${item.label}</strong>`;
-    button.addEventListener("click", () => {
+    button.addEventListener("click", (event) => {
+      if (!canAcceptModalChoice(event)) return;
       if (gameState.answers[gameState.currentMissionIndex]) return;
       gameState.switchStates[item.id] = !gameState.switchStates[item.id];
       renderSwitchesMission(mission);
@@ -1356,13 +1485,15 @@ function renderSwitchesMission(mission) {
   confirmButton.type = "button";
   confirmButton.className = "button button-primary";
   confirmButton.textContent = "Активирай защитата";
-  confirmButton.addEventListener("click", () => {
+  confirmButton.addEventListener("click", (event) => {
+    if (!canAcceptModalChoice(event)) return;
     const isCorrect = mission.requiredOn.every((id) => gameState.switchStates[id]);
-    handleMissionResult(isCorrect, { switches: { ...gameState.switchStates } });
-    Array.from(ui.interactionArea.querySelectorAll("button")).forEach((button) => {
-      button.disabled = true;
-      button.classList.add("is-locked");
-    });
+    if (handleMissionResult(isCorrect, { switches: { ...gameState.switchStates } })) {
+      Array.from(ui.interactionArea.querySelectorAll("button")).forEach((button) => {
+        button.disabled = true;
+        button.classList.add("is-locked");
+      });
+    }
   });
 
   panel.append(switches, confirmButton);
@@ -1385,9 +1516,12 @@ function renderTerminalChoiceMission(mission) {
     button.className = "terminal-command";
     button.dataset.value = option;
     button.textContent = option;
-    button.addEventListener("click", () => {
-      handleMissionResult(option === mission.correctAnswer, { selected: option });
-      lockChoiceButtons(".terminal-command", option, mission.correctAnswer);
+    button.addEventListener("click", (event) => {
+      if (!canAcceptModalChoice(event)) return;
+      const isCorrect = option === mission.correctAnswer;
+      if (handleMissionResult(isCorrect, { selected: option })) {
+        lockChoiceButtons(".terminal-command", option, mission.correctAnswer);
+      }
     });
     buttons.append(button);
   });
@@ -1408,12 +1542,14 @@ function renderInfectedFileBonus(item) {
     button.className = "file-card";
     button.dataset.value = file;
     button.innerHTML = `<span class="file-icon">▤</span><strong>${file}</strong>`;
-    button.addEventListener("click", () => {
+    button.addEventListener("click", (event) => {
+      if (!canAcceptModalChoice(event)) return;
       const isCorrect = file === "free_game_hack.exe";
-      handleBonusResult(item.id, isCorrect, isCorrect ? SCORE_CONFIG.infectedFileCorrect : SCORE_CONFIG.infectedFileWrong, isCorrect
+      if (handleBonusResult(item.id, isCorrect, isCorrect ? SCORE_CONFIG.infectedFileCorrect : SCORE_CONFIG.infectedFileWrong, isCorrect
         ? "Точно така! Файлове с подозрителни имена и .exe разширение могат да бъдат опасни."
-        : "Помисли пак. Файлът free_game_hack.exe изглежда най-съмнителен.");
-      lockChoiceButtons(".file-card", file, "free_game_hack.exe");
+        : "Помисли пак. Файлът free_game_hack.exe изглежда най-съмнителен.")) {
+        lockChoiceButtons(".file-card", file, "free_game_hack.exe");
+      }
     });
     grid.append(button);
   });
@@ -1438,7 +1574,8 @@ function renderPowerPanelBonus(item) {
     button.type = "button";
     button.className = `switch-control ${gameState.switchStates[switchItem.id] ? "on" : ""}`;
     button.innerHTML = `<span class="switch-track"><span class="switch-thumb"></span></span><strong>${switchItem.label}</strong>`;
-    button.addEventListener("click", () => {
+    button.addEventListener("click", (event) => {
+      if (!canAcceptModalChoice(event)) return;
       gameState.switchStates[switchItem.id] = !gameState.switchStates[switchItem.id];
       renderPowerPanelBonus(item);
       playSound("click");
@@ -1449,7 +1586,8 @@ function renderPowerPanelBonus(item) {
   confirmButton.type = "button";
   confirmButton.className = "button button-primary";
   confirmButton.textContent = "Включи захранването";
-  confirmButton.addEventListener("click", () => {
+  confirmButton.addEventListener("click", (event) => {
+    if (!canAcceptModalChoice(event)) return;
     const isCorrect = gameState.switchStates.power && gameState.switchStates.cooling && !gameState.switchStates.alarm;
     handleBonusResult(item.id, isCorrect, isCorrect ? SCORE_CONFIG.powerPanelCorrect : SCORE_CONFIG.powerPanelWrong, isCorrect
       ? "Резервното захранване е включено! +40 точки"
@@ -1480,7 +1618,8 @@ function renderCablePuzzleBonus(item) {
     cableButton.className = `cable-card cable-${itemColor.id}`;
     cableButton.classList.toggle("selected", gameState.selectedCable === itemColor.id);
     cableButton.textContent = itemColor.cable;
-    cableButton.addEventListener("click", () => {
+    cableButton.addEventListener("click", (event) => {
+      if (!canAcceptModalChoice(event)) return;
       gameState.selectedCable = itemColor.id;
       renderCablePuzzleBonus(item);
       playSound("click");
@@ -1491,7 +1630,9 @@ function renderCablePuzzleBonus(item) {
     portButton.type = "button";
     portButton.className = `cable-card cable-${itemColor.id}`;
     portButton.textContent = itemColor.port;
-    portButton.addEventListener("click", () => {
+    portButton.addEventListener("click", (event) => {
+      if (!canAcceptModalChoice(event)) return;
+      if (gameState.cablePairs.length >= 3) return;
       if (!gameState.selectedCable) return;
       gameState.cablePairs.push(`${gameState.selectedCable}:${itemColor.id}`);
       gameState.selectedCable = "";
@@ -1510,7 +1651,8 @@ function renderCablePuzzleBonus(item) {
   confirmButton.className = "button button-primary";
   confirmButton.textContent = "Потвърди кабелите";
   confirmButton.disabled = pairs.length < 3;
-  confirmButton.addEventListener("click", () => {
+  confirmButton.addEventListener("click", (event) => {
+    if (!canAcceptModalChoice(event)) return;
     const correctPairs = new Set(["blue:blue", "green:green", "red:red"]);
     const uniquePairs = new Set(pairs);
     const isCorrect = pairs.length === 3 && uniquePairs.size === 3 && pairs.every((pair) => correctPairs.has(pair));
@@ -1518,18 +1660,38 @@ function renderCablePuzzleBonus(item) {
       ? "Кабелите са свързани правилно! Мрежата е стабилна."
       : "Част от кабелите не са в правилните портове. Опитай да съвпаднат по цвят.");
   });
-  panel.append(cableList, portList, result, confirmButton);
+  const clearButton = document.createElement("button");
+  clearButton.type = "button";
+  clearButton.className = "button button-secondary";
+  clearButton.textContent = "Опитай отново";
+  clearButton.hidden = pairs.length === 0;
+  clearButton.addEventListener("click", (event) => {
+    if (!canAcceptModalChoice(event)) return;
+    gameState.selectedCable = "";
+    gameState.cablePairs = [];
+    renderCablePuzzleBonus(item);
+    playSound("click");
+  });
+  panel.append(cableList, portList, result, confirmButton, clearButton);
   ui.interactionArea.replaceChildren(panel);
 }
 
 function handleBonusResult(id, isCorrect, earnedPoints, explanation) {
   if (mapState.completedBonuses.includes(id)) {
     showToast("Този бонус вече е изпълнен.", "helper");
-    return;
+    return false;
   }
+
+  if (!isCorrect) {
+    showFeedback(false, 0, explanation, "Не е вярно, но няма наказание. Прочети подсказката и опитай отново.");
+    ui.continueMapBtn.hidden = true;
+    playSound("wrong");
+    return false;
+  }
+
   gameState.score += earnedPoints;
   completeBonus(id);
-  showFeedback(isCorrect, earnedPoints, explanation, isCorrect ? "Бонусът е завършен." : "Бонусът е отчетен и можеш да продължиш.");
+  showFeedback(true, earnedPoints, explanation, "Бонусът е завършен.");
   ui.continueMapBtn.hidden = false;
   Array.from(ui.interactionArea.querySelectorAll("button")).forEach((button) => {
     button.disabled = true;
@@ -1537,7 +1699,8 @@ function handleBonusResult(id, isCorrect, earnedPoints, explanation) {
   });
   updateHud();
   renderMapState();
-  playSound(isCorrect ? "correct" : "wrong");
+  playSound("correct");
+  return true;
 }
 
 function completeBonus(id) {
@@ -1548,33 +1711,42 @@ function completeBonus(id) {
 
 function handleMissionResult(isCorrect, selectedData) {
   if (gameState.answers[gameState.currentMissionIndex]) {
-    return;
+    return false;
   }
 
   const mission = missions[gameState.currentMissionIndex];
-  const earnedPoints = isCorrect ? SCORE_CONFIG.correctMission : SCORE_CONFIG.wrongMission;
+  if (!isCorrect) {
+    showFeedback(false, SCORE_CONFIG.wrongMission, mission.wrongExplanation, "Не е вярно, но няма наказание. Прочети подсказката и опитай отново.");
+    ui.continueMapBtn.hidden = true;
+    updateHud();
+    playSound("wrong");
+    return false;
+  }
+
+  const earnedPoints = SCORE_CONFIG.correctMission;
   gameState.score += earnedPoints;
   gameState.answers[gameState.currentMissionIndex] = {
     type: mission.type,
-    correct: isCorrect,
+    correct: true,
     earnedPoints,
     ...selectedData
   };
   mapState.completedMissions.push(gameState.currentMissionIndex);
   mapState.activeMissionIndex = Math.min(missions.length - 1, mapState.activeMissionIndex + 1);
   gameState.currentMissionIndex = mapState.activeMissionIndex;
-  showFeedback(isCorrect, earnedPoints, isCorrect ? mission.correctExplanation : mission.wrongExplanation, mission.note);
+  showFeedback(true, earnedPoints, mission.correctExplanation, mission.note);
   ui.continueMapBtn.hidden = false;
   updateDoorVisuals();
   updateHud();
   renderRoute();
-  playSound(isCorrect ? "correct" : "wrong");
+  playSound("correct");
+  return true;
 }
 
 function showFeedback(isCorrect, earnedPoints, explanation, note) {
   ui.feedbackPanel.hidden = false;
   ui.feedbackPanel.className = `feedback-panel ${isCorrect ? "correct" : "incorrect"}`;
-  ui.feedbackBadge.textContent = isCorrect ? `Успех! +${earnedPoints} точки` : `Продължавай смело! +${earnedPoints} точки за участие`;
+  ui.feedbackBadge.textContent = isCorrect ? `Успех! +${earnedPoints} точки` : "Опитай отново";
   ui.feedbackText.textContent = explanation;
   ui.feedbackNote.textContent = note;
 }
@@ -1736,10 +1908,11 @@ function finishGame(options = {}) {
   if (!defeated) {
     launchConfetti();
     playSound("success");
+    saveScore();
   } else {
     playSound("wrong");
+    setMessage(ui.saveStatus, "Този опит приключи при 0 живота и не се записва като провал в класацията.", "helper");
   }
-  saveScore();
 }
 
 function calculateTimeBonus(timeSeconds) {
@@ -1764,8 +1937,30 @@ function renderResult() {
   ui.finalBadge.textContent = result.title;
   ui.resultTitle.textContent = result.defeated ? "Мисията приключи!" : "Сървърната стая е защитена!";
   ui.resultMessage.textContent = result.defeated
-    ? "Вирусите изчерпаха животите ти. Опитай отново, събери ключове и пази героя от опасните зони."
+    ? "Вирусите достигнаха до системата и сървърната стая остана незащитена. Вирусите са опасни зони: всеки сблъсък отнема живот, а след удар имаш кратка защита. Целта е да ги избягваш, да събираш ключове и да изпълняваш мисиите."
     : "Ти премина през Кибер академията, събра защитни ключове, избегна вирусите и помогна за защитата на училищния сървър.";
+  ui.resultNewGameBtn.textContent = result.defeated ? "Опитай отново" : "Нова игра";
+
+  if (ui.defeatTips) {
+    ui.defeatTips.hidden = !result.defeated;
+    ui.defeatTips.replaceChildren();
+    if (result.defeated) {
+      const title = document.createElement("h3");
+      title.textContent = "Следващ опит";
+      const list = document.createElement("ul");
+      [
+        "Движи се внимателно около вирусите.",
+        "Събирай ключове.",
+        "Използвай бутона Действие само когато си до терминал.",
+        "Опитай отново."
+      ].forEach((tip) => {
+        const item = document.createElement("li");
+        item.textContent = tip;
+        list.append(item);
+      });
+      ui.defeatTips.append(title, list);
+    }
+  }
 
   const items = [
     { label: "Име", value: result.name },
@@ -1810,12 +2005,14 @@ async function saveScore() {
         title: gameState.finalResult.title
       })
     });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || "Резултатът не беше записан. Моля, опитайте отново.");
+    const data = await readJsonResponse(response);
+    if (!response.ok) {
+      throw new Error(data?.error || "Играта приключи успешно, но резултатът не беше записан в класацията. Провери сървъра или базата данни.");
+    }
     gameState.hasSavedResult = true;
     setMessage(ui.saveStatus, "Резултатът беше записан успешно.", "success");
   } catch (error) {
-    setMessage(ui.saveStatus, getNetworkAwareMessage(error, "Резултатът не беше записан. Моля, опитайте отново."), "error");
+    setMessage(ui.saveStatus, getNetworkAwareMessage(error, "Играта приключи успешно, но резултатът не беше записан в класацията. Провери сървъра или базата данни."), "error");
   }
 }
 
@@ -1824,8 +2021,8 @@ async function loadLeaderboard() {
 
   try {
     const response = await fetch("/api/scores", { cache: "no-store" });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || "Класацията не може да бъде заредена в момента.");
+    const data = await readJsonResponse(response);
+    if (!response.ok) throw new Error(data?.error || "Класацията не може да бъде заредена в момента.");
     gameState.leaderboard = sortScores(Array.isArray(data.scores) ? data.scores : []);
     renderLeaderboard();
     setMessage(ui.leaderboardMessage, "");
@@ -1920,8 +2117,8 @@ async function clearLeaderboard(adminCode) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ adminCode })
     });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || "Класацията не може да бъде изчистена в момента.");
+    const data = await readJsonResponse(response);
+    if (!response.ok) throw new Error(data?.error || "Класацията не може да бъде изчистена в момента.");
     await loadLeaderboard();
     setMessage(ui.leaderboardMessage, "Класацията беше изчистена успешно.", "success");
   } catch (error) {
@@ -1934,6 +2131,20 @@ function getNetworkAwareMessage(error, fallbackMessage) {
     return "Няма връзка със сървъра. Проверете дали проектът е стартиран правилно.";
   }
   return error?.message || fallbackMessage;
+}
+
+async function readJsonResponse(response) {
+  const text = await response.text();
+  if (!text) return {};
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    return {
+      error: response.ok
+        ? ""
+        : "Сървърът върна неочакван отговор. Провери дали API маршрутът работи правилно."
+    };
+  }
 }
 
 function setMessage(element, text, type = "") {

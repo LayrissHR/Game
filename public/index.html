@@ -73,11 +73,25 @@
             <p class="eyebrow">Управление</p>
             <h2 id="instructions-title" class="mission-title">Защити сървърната стая</h2>
             <div class="instruction-grid">
-              <div class="instruction-item desktop-instruction"><strong>Движение</strong><span>стрелки или WASD</span></div>
-              <div class="instruction-item desktop-instruction"><strong>Взаимодействие</strong><span>натисни E до терминал</span></div>
-              <div class="instruction-item mobile-instruction"><strong>Движение</strong><span>използвай бутоните на екрана</span></div>
-              <div class="instruction-item mobile-instruction"><strong>Взаимодействие</strong><span>натисни „Действие“ до терминал или обект</span></div>
-              <div class="instruction-item"><strong>Цел</strong><span>премини през стаите, изпълни мисиите и защити сървъра</span></div>
+              <div class="instruction-item desktop-instruction"><strong>Движение</strong><span>WASD или стрелки</span></div>
+              <div class="instruction-item desktop-instruction"><strong>Действие</strong><span>натисни E до терминал</span></div>
+              <div class="instruction-item desktop-instruction"><strong>Цел</strong><span>изпълни мисиите и защити сървъра</span></div>
+              <div class="instruction-item mobile-instruction"><strong>Движение</strong><span>използвай виртуалния joystick</span></div>
+              <div class="instruction-item mobile-instruction"><strong>Действие</strong><span>натисни бутона „Действие“</span></div>
+              <div class="instruction-item mobile-instruction"><strong>Екран</strong><span>завърти телефона хоризонтално</span></div>
+              <div class="instruction-item"><strong>Вируси</strong><span>внимавай с опасните зони - те отнемат животи</span></div>
+              <div class="instruction-item"><strong>Терминали</strong><span>докосвай ги само когато си близо до тях</span></div>
+              <div class="instruction-item"><strong>Грешки</strong><span>няма наказание - прочети подсказката и опитай отново</span></div>
+            </div>
+            <div class="win-guide" aria-label="Как се печели">
+              <h3>Как се печели</h3>
+              <ul>
+                <li>изпълни 5 основни мисии;</li>
+                <li>събери защитни ключове;</li>
+                <li>избягвай вирусите;</li>
+                <li>достигни сървърната стая;</li>
+                <li>активирай защитната стена.</li>
+              </ul>
             </div>
             <button id="begin-map-btn" class="button button-primary" type="button">Започни</button>
           </article>
@@ -137,6 +151,7 @@
               <p id="result-message" class="result-message">
                 Ти премина през Кибер академията, събра защитни ключове, избегна вирусите и помогна за защитата на училищния сървър.
               </p>
+              <div id="defeat-tips" class="defeat-tips" hidden></div>
               <p id="save-status" class="message" aria-live="polite"></p>
             </article>
 
@@ -227,11 +242,8 @@
     </div>
 
     <div id="mobile-controls" class="mobile-controls" aria-label="Мобилни бутони за управление">
-      <div class="dpad" aria-label="Посоки">
-        <button class="dpad-button dpad-up" type="button" data-direction="up" aria-label="Нагоре">▲</button>
-        <button class="dpad-button dpad-left" type="button" data-direction="left" aria-label="Наляво">◀</button>
-        <button class="dpad-button dpad-right" type="button" data-direction="right" aria-label="Надясно">▶</button>
-        <button class="dpad-button dpad-down" type="button" data-direction="down" aria-label="Надолу">▼</button>
+      <div class="joystick-pad" aria-label="Joystick за движение" role="application">
+        <div class="joystick-knob" aria-hidden="true"></div>
       </div>
       <button id="mobile-action-btn" class="action-button" type="button" aria-label="Действие">Действие</button>
     </div>

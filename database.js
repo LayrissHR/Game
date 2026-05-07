@@ -6,8 +6,31 @@ const configuredDatabasePath = process.env.DATABASE_PATH || path.join(__dirname,
 const databasePath = path.isAbsolute(configuredDatabasePath)
   ? configuredDatabasePath
   : path.resolve(__dirname, configuredDatabasePath);
-fs.mkdirSync(path.dirname(databasePath), { recursive: true });
-const db = new sqlite3.Database(databasePath);
+try {
+  fs.mkdirSync(path.dirname(databasePath), { recursive: true });
+} catch (error) {
+  console.error(`[database] Не може да се създаде папката за SQLite файла: ${path.dirname(databasePath)}`, {
+    code: error.code,
+    message: error.message
+  });
+  throw error;
+}
+
+let db;
+const databaseReady = new Promise((resolve, reject) => {
+  db = new sqlite3.Database(databasePath, (error) => {
+    if (error) {
+      console.error(`[database] Не може да се отвори SQLite база данни: ${databasePath}`, {
+        code: error.code,
+        message: error.message
+      });
+      reject(error);
+      return;
+    }
+
+    resolve(db);
+  });
+});
 
 function run(sql, params = []) {
   return new Promise((resolve, reject) => {
@@ -39,6 +62,7 @@ function all(sql, params = []) {
 }
 
 async function initDatabase() {
+  await databaseReady;
   await run(`
     CREATE TABLE IF NOT EXISTS scores (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
