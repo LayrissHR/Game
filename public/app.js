@@ -235,9 +235,11 @@ const gameState = {
   switchStates: {},
   timerIntervalId: null,
   hasSavedResult: false,
+  hasCreatedRewardClaim: false,
   soundEnabled: true,
   leaderboard: [],
-  finalResult: null
+  finalResult: null,
+  rewardClaim: null
 };
 
 const inputState = {
@@ -352,6 +354,13 @@ function cacheElements() {
   ui.resultMessage = document.getElementById("result-message");
   ui.finalBadge = document.getElementById("final-badge");
   ui.saveStatus = document.getElementById("save-status");
+  ui.rewardQrSection = document.getElementById("rewardQrSection");
+  ui.rewardQrCode = document.getElementById("rewardQrCode");
+  ui.rewardClaimCode = document.getElementById("rewardClaimCode");
+  ui.rewardStatus = document.getElementById("rewardStatus");
+  ui.rewardInstruction = document.getElementById("rewardInstruction");
+  ui.rewardClaimStatus = document.getElementById("reward-claim-status");
+  ui.copyClaimCodeBtn = document.getElementById("copyClaimCodeBtn");
   ui.resultNewGameBtn = document.getElementById("result-new-game-btn");
   ui.resultLeaderboardBtn = document.getElementById("result-leaderboard-btn");
   ui.resultHomeBtn = document.getElementById("result-home-btn");
@@ -379,6 +388,7 @@ function bindEvents() {
   ui.resultNewGameBtn.addEventListener("click", prepareNewGame);
   ui.resultLeaderboardBtn.addEventListener("click", () => showScreen("leaderboard"));
   ui.resultHomeBtn.addEventListener("click", goHome);
+  ui.copyClaimCodeBtn.addEventListener("click", copyRewardClaimCode);
   ui.leaderboardNewGameBtn.addEventListener("click", prepareNewGame);
   ui.leaderboardHomeBtn.addEventListener("click", goHome);
   ui.refreshLeaderboardBtn.addEventListener("click", loadLeaderboard);
@@ -751,7 +761,9 @@ function resetGameState() {
   gameState.cablePairs = [];
   gameState.switchStates = {};
   gameState.hasSavedResult = false;
+  gameState.hasCreatedRewardClaim = false;
   gameState.finalResult = null;
+  gameState.rewardClaim = null;
   mapState.player.x = 76;
   mapState.player.y = 146;
   mapState.lives = mapState.maxLives;
@@ -778,6 +790,7 @@ function resetGameState() {
   hazards[1].y = 170;
   hazards[2].x = 426;
   ui.resultSummary.replaceChildren();
+  resetRewardClaimUi();
   ui.interactionArea.replaceChildren();
   ui.feedbackPanel.hidden = true;
   ui.continueMapBtn.hidden = true;
@@ -1908,11 +1921,11 @@ function finishGame(options = {}) {
   if (!defeated) {
     launchConfetti();
     playSound("success");
-    saveScore();
   } else {
     playSound("wrong");
     setMessage(ui.saveStatus, "Този опит приключи при 0 живота и не се записва като провал в класацията.", "helper");
   }
+  persistFinalResult();
 }
 
 function calculateTimeBonus(timeSeconds) {
@@ -1990,8 +2003,18 @@ function renderResult() {
   ui.resultSummary.replaceChildren(fragment);
 }
 
+async function persistFinalResult() {
+  if (!gameState.finalResult) return;
+
+  if (!gameState.finalResult.defeated) {
+    await saveScore();
+  }
+
+  await createRewardClaim();
+}
+
 async function saveScore() {
-  if (!gameState.finalResult || gameState.hasSavedResult) return;
+  if (!gameState.finalResult || gameState.hasSavedResult) return false;
   setMessage(ui.saveStatus, "Записване на резултата...", "helper");
 
   try {
@@ -2011,8 +2034,86 @@ async function saveScore() {
     }
     gameState.hasSavedResult = true;
     setMessage(ui.saveStatus, "Резултатът беше записан успешно.", "success");
+    return true;
   } catch (error) {
     setMessage(ui.saveStatus, getNetworkAwareMessage(error, "Играта приключи успешно, но резултатът не беше записан в класацията. Провери сървъра или базата данни."), "error");
+    return false;
+  }
+}
+
+async function createRewardClaim() {
+  if (!gameState.finalResult || gameState.hasCreatedRewardClaim) return false;
+  setMessage(ui.rewardClaimStatus, "Генериране на QR код за проверка...", "helper");
+
+  try {
+    const response = await fetch("/api/reward-claims", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        studentName: gameState.finalResult.name,
+        score: gameState.finalResult.score,
+        title: gameState.finalResult.title,
+        completedMissions: gameState.finalResult.missions,
+        gameWon: !gameState.finalResult.defeated && gameState.finalResult.missions >= missions.length
+      })
+    });
+    const data = await readJsonResponse(response);
+
+    if (!response.ok) {
+      throw new Error(data?.error || "Резултатът е отчетен, но QR кодът не беше генериран. Обърни се към организатор.");
+    }
+
+    gameState.hasCreatedRewardClaim = true;
+    gameState.rewardClaim = data;
+    renderRewardClaim(data);
+    setMessage(ui.rewardClaimStatus, "QR кодът е готов за проверка от организатор.", "success");
+    return true;
+  } catch (error) {
+    resetRewardClaimUi();
+    setMessage(ui.rewardClaimStatus, getNetworkAwareMessage(error, "Резултатът е отчетен, но QR кодът не беше генериран. Обърни се към организатор."), "error");
+    return false;
+  }
+}
+
+function renderRewardClaim(claim) {
+  ui.rewardQrSection.hidden = false;
+  ui.rewardQrCode.replaceChildren();
+
+  const image = document.createElement("img");
+  image.src = claim.qrDataUrl;
+  image.alt = `QR код за проверка на талон ${claim.claimCode}`;
+  image.width = 240;
+  image.height = 240;
+  ui.rewardQrCode.append(image);
+
+  ui.rewardClaimCode.textContent = claim.claimCode;
+  ui.rewardStatus.className = `reward-status ${claim.eligible ? "eligible" : "not-eligible"}`;
+  ui.rewardStatus.textContent = claim.eligible ? claim.rewardLabel : "Код за участие";
+  ui.rewardInstruction.textContent = claim.eligible
+    ? "Поздравления! Покажи този QR код на организатор, за да получиш своята награда."
+    : "Това е твоят финален код за участие. Покажи го на организатор, ако бъде поискан за проверка.";
+}
+
+function resetRewardClaimUi() {
+  if (!ui.rewardQrSection) return;
+  ui.rewardQrSection.hidden = true;
+  ui.rewardQrCode?.replaceChildren();
+  ui.rewardClaimCode.textContent = "";
+  ui.rewardStatus.textContent = "";
+  ui.rewardStatus.className = "reward-status";
+  ui.rewardInstruction.textContent = "";
+  setMessage(ui.rewardClaimStatus, "");
+}
+
+async function copyRewardClaimCode() {
+  const code = gameState.rewardClaim?.claimCode || ui.rewardClaimCode?.textContent;
+  if (!code) return;
+
+  try {
+    await navigator.clipboard?.writeText(code);
+    setMessage(ui.rewardClaimStatus, "Кодът е копиран.", "success");
+  } catch (error) {
+    setMessage(ui.rewardClaimStatus, `Код: ${code}`, "helper");
   }
 }
 

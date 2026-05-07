@@ -73,6 +73,25 @@ async function initDatabase() {
       created_at TEXT NOT NULL
     )
   `);
+
+  await run(`
+    CREATE TABLE IF NOT EXISTS reward_claims (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      student_name TEXT NOT NULL,
+      score INTEGER NOT NULL,
+      title TEXT NOT NULL,
+      completed_missions INTEGER DEFAULT 0,
+      game_won INTEGER DEFAULT 0,
+      claim_code TEXT NOT NULL UNIQUE,
+      qr_url TEXT NOT NULL,
+      eligible INTEGER NOT NULL DEFAULT 0,
+      reward_reason TEXT,
+      reward_label TEXT,
+      claimed INTEGER NOT NULL DEFAULT 0,
+      claimed_at TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
 }
 
 async function getScores() {
@@ -101,10 +120,88 @@ async function clearScores() {
   return run("DELETE FROM scores");
 }
 
+async function addRewardClaim(rewardClaim) {
+  const {
+    student_name: studentName,
+    score,
+    title,
+    completed_missions: completedMissions,
+    game_won: gameWon,
+    claim_code: claimCode,
+    qr_url: qrUrl,
+    eligible,
+    reward_reason: rewardReason,
+    reward_label: rewardLabel,
+    created_at: createdAt
+  } = rewardClaim;
+
+  return run(
+    `
+      INSERT INTO reward_claims (
+        student_name,
+        score,
+        title,
+        completed_missions,
+        game_won,
+        claim_code,
+        qr_url,
+        eligible,
+        reward_reason,
+        reward_label,
+        created_at
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `,
+    [
+      studentName,
+      score,
+      title,
+      completedMissions,
+      gameWon,
+      claimCode,
+      qrUrl,
+      eligible,
+      rewardReason,
+      rewardLabel,
+      createdAt
+    ]
+  );
+}
+
+async function getRewardClaimByCode(claimCode) {
+  const rows = await all(
+    `
+      SELECT id, student_name, score, title, completed_missions, game_won,
+        claim_code, qr_url, eligible, reward_reason, reward_label,
+        claimed, claimed_at, created_at
+      FROM reward_claims
+      WHERE claim_code = ?
+      LIMIT 1
+    `,
+    [claimCode]
+  );
+
+  return rows[0] || null;
+}
+
+async function markRewardClaimed(claimCode, claimedAt) {
+  return run(
+    `
+      UPDATE reward_claims
+      SET claimed = 1, claimed_at = ?
+      WHERE claim_code = ? AND eligible = 1 AND claimed = 0
+    `,
+    [claimedAt, claimCode]
+  );
+}
+
 module.exports = {
   addScore,
+  addRewardClaim,
   clearScores,
   databasePath,
   getScores,
+  getRewardClaimByCode,
+  markRewardClaimed,
   initDatabase
 };

@@ -1216,6 +1216,86 @@ button {
   font-weight: 900;
 }
 
+.reward-qr-section {
+  margin-top: 18px;
+}
+
+.reward-ticket {
+  padding: 18px;
+  border-radius: 14px;
+  background:
+    linear-gradient(135deg, rgba(47, 184, 255, 0.14), rgba(93, 247, 197, 0.1)),
+    rgba(255, 255, 255, 0.05);
+  border: 1px dashed rgba(93, 247, 197, 0.5);
+  display: grid;
+  gap: 14px;
+  justify-items: center;
+  text-align: center;
+}
+
+.reward-ticket h3 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.qr-box {
+  width: min(260px, 100%);
+  aspect-ratio: 1;
+  padding: 10px;
+  border-radius: 14px;
+  background: #ffffff;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.3);
+}
+
+.qr-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.claim-code {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(4, 10, 24, 0.72);
+  color: #9bfbe6;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  overflow-wrap: anywhere;
+}
+
+.reward-status {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 999px;
+  font-weight: 900;
+}
+
+.reward-status.eligible {
+  color: #04150f;
+  background: #5df7c5;
+}
+
+.reward-status.not-eligible {
+  color: #fff4fb;
+  background: rgba(255, 108, 168, 0.38);
+  border: 1px solid rgba(255, 108, 168, 0.44);
+}
+
+.reward-status.claimed {
+  color: #211502;
+  background: #ffc96c;
+}
+
+.reward-instruction {
+  margin: 0;
+  color: #d3e6ff;
+  line-height: 1.55;
+}
+
 .promo-card__title {
   margin: 0 0 16px;
   font-size: 1.3rem;
@@ -1858,6 +1938,14 @@ button {
     min-width: 104px;
     min-height: 70px;
     padding: 12px;
+  }
+
+  .reward-ticket {
+    padding: 14px;
+  }
+
+  .qr-box {
+    width: min(230px, 100%);
   }
 
   .mobile-controls {
