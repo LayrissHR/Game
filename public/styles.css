@@ -1624,6 +1624,15 @@ button {
 .mobile-map-mode .modal-content {
   width: min(96vw, 760px);
   max-height: calc(100dvh - 20px);
+  scroll-padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+}
+
+.mobile-map-mode .mission-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  padding: 10px 0 calc(10px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(180deg, rgba(9, 15, 33, 0), rgba(9, 15, 33, 0.96) 42%);
 }
 
 .joystick-pad {
