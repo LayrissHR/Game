@@ -1,3 +1,5 @@
+require("dotenv").config({ override: false });
+
 const path = require("path");
 const crypto = require("crypto");
 const express = require("express");
@@ -10,7 +12,7 @@ const {
   getRewardClaimByCode,
   getScores,
   initDatabase,
-  markRewardClaimed
+  markRewardClaimed,
 } = require("./database");
 
 const app = express();
@@ -19,29 +21,34 @@ const ADMIN_CODE = process.env.ADMIN_CODE || "academy2026";
 const ADMIN_SECRET = process.env.ADMIN_SECRET || "1234";
 const HOST = "0.0.0.0";
 const SCORE_CONFIG = {
-  maxScore: 760
+  maxScore: 760,
 };
 const REWARD_CONFIG = {
   missionCount: 5,
   rewardLabel: "Физическа награда",
-  eligibleTitles: [
-    "Млад кибергерой",
-    "Бъдещ IT специалист"
-  ]
+  eligibleTitles: ["Млад кибергерой", "Бъдещ IT специалист"],
 };
 const publicDirectory = path.join(__dirname, "public");
-const jsQrScriptPath = path.join(__dirname, "node_modules", "jsqr", "dist", "jsQR.js");
+const jsQrScriptPath = path.join(
+  __dirname,
+  "node_modules",
+  "jsqr",
+  "dist",
+  "jsQR.js",
+);
 
 const allowedTitles = new Set([
   "Начинаещ изследовател",
   "Дигитален помощник",
   "Млад кибергерой",
   "Бъдещ IT специалист",
-  ...REWARD_CONFIG.eligibleTitles
+  ...REWARD_CONFIG.eligibleTitles,
 ]);
 
 if (!process.env.ADMIN_SECRET) {
-  console.warn("[admin] ADMIN_SECRET не е зададен. Използва се временен локален код 1234.");
+  console.warn(
+    "[admin] ADMIN_SECRET не е зададен. Използва се временен локален код 1234.",
+  );
 }
 
 function sanitizeName(value) {
@@ -74,7 +81,9 @@ function validateScorePayload(payload) {
   }
 
   if (score < 0 || score > SCORE_CONFIG.maxScore) {
-    return { error: `Точките трябва да бъдат между 0 и ${SCORE_CONFIG.maxScore}.` };
+    return {
+      error: `Точките трябва да бъдат между 0 и ${SCORE_CONFIG.maxScore}.`,
+    };
   }
 
   if (!Number.isFinite(timeSeconds) || timeSeconds <= 0) {
@@ -90,8 +99,8 @@ function validateScorePayload(payload) {
       name,
       score,
       time_seconds: timeSeconds,
-      title
-    }
+      title,
+    },
   };
 }
 
@@ -121,15 +130,27 @@ function validateRewardPayload(payload) {
     return { error: "Името трябва да бъде до 20 символа." };
   }
 
-  if (!Number.isFinite(score) || !Number.isInteger(score) || score < 0 || score > SCORE_CONFIG.maxScore) {
-    return { error: `Точките трябва да бъдат цяло число между 0 и ${SCORE_CONFIG.maxScore}.` };
+  if (
+    !Number.isFinite(score) ||
+    !Number.isInteger(score) ||
+    score < 0 ||
+    score > SCORE_CONFIG.maxScore
+  ) {
+    return {
+      error: `Точките трябва да бъдат цяло число между 0 и ${SCORE_CONFIG.maxScore}.`,
+    };
   }
 
   if (!allowedTitles.has(title)) {
     return { error: "Титлата не е валидна." };
   }
 
-  if (!Number.isFinite(completedMissions) || !Number.isInteger(completedMissions) || completedMissions < 0 || completedMissions > REWARD_CONFIG.missionCount) {
+  if (
+    !Number.isFinite(completedMissions) ||
+    !Number.isInteger(completedMissions) ||
+    completedMissions < 0 ||
+    completedMissions > REWARD_CONFIG.missionCount
+  ) {
     return { error: "Броят изпълнени мисии не е валиден." };
   }
 
@@ -139,8 +160,8 @@ function validateRewardPayload(payload) {
       score,
       title,
       completedMissions,
-      gameWon
-    }
+      gameWon,
+    },
   };
 }
 
@@ -149,14 +170,15 @@ function calculateRewardEligibility(score, title, completedMissions, gameWon) {
     return {
       eligible: true,
       reason: `Ученикът е достигнал титла „${title}“.`,
-      rewardLabel: REWARD_CONFIG.rewardLabel
+      rewardLabel: REWARD_CONFIG.rewardLabel,
     };
   }
 
   return {
     eligible: false,
-    reason: "Участникът няма право на физическа награда, защото не е достигнал титла „Млад кибергерой“ или „Бъдещ IT специалист“.",
-    rewardLabel: REWARD_CONFIG.rewardLabel
+    reason:
+      "Участникът няма право на физическа награда, защото не е достигнал титла „Млад кибергерой“ или „Бъдещ IT специалист“.",
+    rewardLabel: REWARD_CONFIG.rewardLabel,
   };
 }
 
@@ -195,7 +217,7 @@ function normalizeRewardClaim(row) {
     ...row,
     eligible: Boolean(row.eligible),
     claimed: Boolean(row.claimed),
-    game_won: Boolean(row.game_won)
+    game_won: Boolean(row.game_won),
   };
 }
 
@@ -216,7 +238,7 @@ function formatAdminDate(value) {
     month: "2-digit",
     year: "numeric",
     hour: "2-digit",
-    minute: "2-digit"
+    minute: "2-digit",
   });
 }
 
@@ -246,7 +268,11 @@ function renderAdminVerifyPage(claim, options = {}) {
 </html>`;
   }
 
-  const statusClass = claim.claimed ? "claimed" : claim.eligible ? "eligible" : "not-eligible";
+  const statusClass = claim.claimed
+    ? "claimed"
+    : claim.eligible
+      ? "eligible"
+      : "not-eligible";
   const statusText = claim.claimed
     ? "Наградата вече е получена"
     : claim.eligible
@@ -280,13 +306,17 @@ function renderAdminVerifyPage(claim, options = {}) {
       </dl>
       ${claim.claimed ? `<p class="warning">Тази награда вече е получена.</p>` : ""}
       ${!claim.eligible ? `<p class="warning">Този участник няма право на физическа награда според зададените критерии.</p>` : ""}
-      ${canClaim ? `
+      ${
+        canClaim
+          ? `
         <form class="claim-form" method="post" action="/admin/claim/${encodeURIComponent(claim.claim_code)}">
           <label for="adminSecret">Администраторски код</label>
           <input id="adminSecret" name="adminSecret" type="password" inputmode="numeric" autocomplete="one-time-code" required />
           <button type="submit">Маркирай като получена</button>
         </form>
-      ` : ""}
+      `
+          : ""
+      }
     </section>
   </main>
 </body>
@@ -372,7 +402,7 @@ app.post("/api/scores", async (request, response, next) => {
 
     const scoreEntry = {
       ...validation.value,
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
     };
 
     const result = await addScore(scoreEntry);
@@ -381,13 +411,13 @@ app.post("/api/scores", async (request, response, next) => {
       message: "Резултатът беше записан успешно.",
       score: {
         id: result.lastID,
-        ...scoreEntry
-      }
+        ...scoreEntry,
+      },
     });
   } catch (error) {
     console.error("[api/scores] Неуспешен запис на резултат.", {
       code: error.code,
-      message: error.message
+      message: error.message,
     });
     next(error);
   }
@@ -402,14 +432,20 @@ app.post("/api/reward-claims", async (request, response, next) => {
       return;
     }
 
-    const { studentName, score, title, completedMissions, gameWon } = validation.value;
-    const reward = calculateRewardEligibility(score, title, completedMissions, gameWon);
+    const { studentName, score, title, completedMissions, gameWon } =
+      validation.value;
+    const reward = calculateRewardEligibility(
+      score,
+      title,
+      completedMissions,
+      gameWon,
+    );
     const claimCode = await generateUniqueClaimCode();
     const verifyUrl = `${getRequestOrigin(request)}/admin/verify/${encodeURIComponent(claimCode)}`;
     const qrDataUrl = await QRCode.toDataURL(verifyUrl, {
       errorCorrectionLevel: "M",
       margin: 2,
-      width: 280
+      width: 280,
     });
     const createdAt = new Date().toISOString();
 
@@ -424,7 +460,7 @@ app.post("/api/reward-claims", async (request, response, next) => {
       eligible: reward.eligible ? 1 : 0,
       reward_reason: reward.reason,
       reward_label: reward.rewardLabel,
-      created_at: createdAt
+      created_at: createdAt,
     });
 
     response.status(201).json({
@@ -434,12 +470,12 @@ app.post("/api/reward-claims", async (request, response, next) => {
       qrDataUrl,
       eligible: reward.eligible,
       rewardReason: reward.reason,
-      rewardLabel: reward.rewardLabel
+      rewardLabel: reward.rewardLabel,
     });
   } catch (error) {
     console.error("[api/reward-claims] Неуспешно създаване на QR талон.", {
       code: error.code,
-      message: error.message
+      message: error.message,
     });
     next(error);
   }
@@ -459,8 +495,13 @@ app.get("/admin/verify/:claimCode", async (request, response, next) => {
 app.post("/admin/claim/:claimCode", async (request, response, next) => {
   try {
     const claimCode = sanitizeClaimCode(request.params.claimCode);
-    const adminSecret = typeof request.body?.adminSecret === "string" ? request.body.adminSecret.trim() : "";
-    const wantsJson = request.is("application/json") || request.get("accept")?.includes("application/json");
+    const adminSecret =
+      typeof request.body?.adminSecret === "string"
+        ? request.body.adminSecret.trim()
+        : "";
+    const wantsJson =
+      request.is("application/json") ||
+      request.get("accept")?.includes("application/json");
     const claim = normalizeRewardClaim(await getRewardClaimByCode(claimCode));
 
     if (!claim) {
@@ -477,22 +518,36 @@ app.post("/admin/claim/:claimCode", async (request, response, next) => {
         response.status(403).json({ error: "Невалиден администраторски код." });
         return;
       }
-      response.status(403).type("html").send(renderAdminVerifyPage(claim, {
-        message: "Невалиден администраторски код.",
-        messageType: "error"
-      }));
+      response
+        .status(403)
+        .type("html")
+        .send(
+          renderAdminVerifyPage(claim, {
+            message: "Невалиден администраторски код.",
+            messageType: "error",
+          }),
+        );
       return;
     }
 
     if (!claim.eligible) {
       if (wantsJson) {
-        response.status(400).json({ error: "Този участник няма право на физическа награда според зададените критерии." });
+        response.status(400).json({
+          error:
+            "Този участник няма право на физическа награда според зададените критерии.",
+        });
         return;
       }
-      response.status(400).type("html").send(renderAdminVerifyPage(claim, {
-        message: "Този участник няма право на физическа награда според зададените критерии.",
-        messageType: "error"
-      }));
+      response
+        .status(400)
+        .type("html")
+        .send(
+          renderAdminVerifyPage(claim, {
+            message:
+              "Този участник няма право на физическа награда според зададените критерии.",
+            messageType: "error",
+          }),
+        );
       return;
     }
 
@@ -501,29 +556,38 @@ app.post("/admin/claim/:claimCode", async (request, response, next) => {
         response.status(409).json({ error: "Тази награда вече е получена." });
         return;
       }
-      response.status(409).type("html").send(renderAdminVerifyPage(claim, {
-        message: "Тази награда вече е получена.",
-        messageType: "error"
-      }));
+      response
+        .status(409)
+        .type("html")
+        .send(
+          renderAdminVerifyPage(claim, {
+            message: "Тази награда вече е получена.",
+            messageType: "error",
+          }),
+        );
       return;
     }
 
     await markRewardClaimed(claimCode, new Date().toISOString());
-    const updatedClaim = normalizeRewardClaim(await getRewardClaimByCode(claimCode));
+    const updatedClaim = normalizeRewardClaim(
+      await getRewardClaimByCode(claimCode),
+    );
 
     if (wantsJson) {
       response.json({
         success: true,
         message: "Наградата е маркирана като получена.",
-        claim: updatedClaim
+        claim: updatedClaim,
       });
       return;
     }
 
-    response.type("html").send(renderAdminVerifyPage(updatedClaim, {
-      message: "Наградата е маркирана като получена.",
-      messageType: "success"
-    }));
+    response.type("html").send(
+      renderAdminVerifyPage(updatedClaim, {
+        message: "Наградата е маркирана като получена.",
+        messageType: "success",
+      }),
+    );
   } catch (error) {
     next(error);
   }
@@ -531,10 +595,15 @@ app.post("/admin/claim/:claimCode", async (request, response, next) => {
 
 app.delete("/api/scores", async (request, response, next) => {
   try {
-    const adminCode = typeof request.body?.adminCode === "string" ? request.body.adminCode.trim() : "";
+    const adminCode =
+      typeof request.body?.adminCode === "string"
+        ? request.body.adminCode.trim()
+        : "";
 
     if (!adminCode) {
-      response.status(400).json({ error: "Моля, въведете администраторски код." });
+      response
+        .status(400)
+        .json({ error: "Моля, въведете администраторски код." });
       return;
     }
 
@@ -560,23 +629,31 @@ app.use((error, request, response, next) => {
     method: request.method,
     path: request.path,
     code: error.code,
-    message: error.message
+    message: error.message,
   });
-  response.status(500).json({ error: "Сървърът не успя да обработи заявката. Проверете логовете на приложението." });
+  response.status(500).json({
+    error:
+      "Сървърът не успя да обработи заявката. Проверете логовете на приложението.",
+  });
 });
 
 initDatabase()
   .then(() => {
     app.listen(PORT, HOST, () => {
-      console.log(`IT Quest: Мисия Академия е стартирана на http://localhost:${PORT}`);
+      console.log(
+        `IT Quest: Мисия Академия е стартирана на http://localhost:${PORT}`,
+      );
       console.log(`Локална база данни: ${databasePath}`);
     });
   })
   .catch((error) => {
-    console.error("Неуспешно стартиране на приложението. Проверете DATABASE_PATH и правата за запис.", {
-      databasePath,
-      code: error.code,
-      message: error.message
-    });
+    console.error(
+      "Неуспешно стартиране на приложението. Проверете DATABASE_PATH и правата за запис.",
+      {
+        databasePath,
+        code: error.code,
+        message: error.message,
+      },
+    );
     process.exit(1);
   });
